@@ -1,11 +1,30 @@
 {
   "version": 3,
   "targets": {
-    "net10.0": {}
+    "net10.0": {
+      "WarehouseCore/1.0.0": {
+        "type": "project",
+        "framework": ".NETCoreApp,Version=v10.0",
+        "compile": {
+          "bin/placeholder/WarehouseCore.dll": {}
+        },
+        "runtime": {
+          "bin/placeholder/WarehouseCore.dll": {}
+        }
+      }
+    }
   },
-  "libraries": {},
+  "libraries": {
+    "WarehouseCore/1.0.0": {
+      "type": "project",
+      "path": "../WarehouseCore/WarehouseCore.csproj",
+      "msbuildProject": "../WarehouseCore/WarehouseCore.csproj"
+    }
+  },
   "projectFileDependencyGroups": {
-    "net10.0": []
+    "net10.0": [
+      "WarehouseCore >= 1.0.0"
+    ]
   },
   "packageFolders": {
     "/Users/nizar/.nuget/packages/": {}
@@ -31,7 +50,11 @@
       "frameworks": {
         "net10.0": {
           "targetAlias": "net10.0",
-          "projectReferences": {}
+          "projectReferences": {
+            "/Users/nizar/Codes/C#/WarehouseManagement/WarehouseCore/WarehouseCore.csproj": {
+              "projectPath": "/Users/nizar/Codes/C#/WarehouseManagement/WarehouseCore/WarehouseCore.csproj"
+            }
+          }
         }
       },
       "warningProperties": {
