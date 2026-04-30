@@ -2,9 +2,9 @@ using WarehouseCore.CustomTypes;
 using WarehouseCore.DTOs.ReadDTOs;
 using WarehouseCore.Entities;
 
-namespace WarehouseDataAccess.Interfaces;
+namespace WarehouseServices.Interfaces;
 
-public interface IStockRepository
+public interface IStockService
 {
     Task<bool> ExecuteStockTransferAsync(StockTransfer transfer, List<TransferItemType> items);
     Task<List<CurrentStockDto>> GetCurrentStockAsync(int productId);

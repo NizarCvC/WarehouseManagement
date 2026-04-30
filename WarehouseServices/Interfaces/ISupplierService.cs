@@ -1,11 +1,11 @@
 using WarehouseCore.DTOs.CreateDTOs;
 using WarehouseCore.Entities;
 
-namespace WarehouseDataAccess.Interfaces;
+namespace WarehouseServices.Interfaces;
 
-public interface ISupplierRepository
+public interface ISupplierService
 {
-    Task<Supplier?> GetSupplierByIdAsync(int supplierId);
+    Task<Supplier> GetSupplierByIdAsync(int supplierId);
     Task<List<Supplier>> GetAllSuppliersAsync(int page = 1, int pageSize = 10);
     Task<int> GetSuppliersCountAsync();
     Task<int> AddNewSupplierAsync(CreateSupplierDto supplier);

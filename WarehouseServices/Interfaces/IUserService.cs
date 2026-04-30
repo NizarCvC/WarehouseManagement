@@ -1,12 +1,11 @@
 using WarehouseCore.DTOs.CreateDTOs;
 using WarehouseCore.Entities;
 
-namespace WarehouseDataAccess.Interfaces;
+namespace WarehouseServices.Interfaces;
 
-public interface IUserRepository
+public interface IUserService
 {
-    Task<User?> GetUserByIdAsync(int userId);
-    Task<User?> GetByUsernameAsync(string username);
+    Task<User> GetUserByIdAsync(int userId);
     Task<List<User>> GetAllUsersAsync(int page = 1, int pageSize = 10);
     Task<int> GetUsersCountAsync();
     Task<int> AddNewUserAsync(CreateUserDto user);

@@ -2,9 +2,9 @@ using WarehouseCore.CustomTypes;
 using WarehouseCore.DTOs.ReadDTOs;
 using WarehouseCore.Entities;
 
-namespace WarehouseDataAccess.Interfaces;
+namespace WarehouseServices.Interfaces;
 
-public interface IInvoiceRepository
+public interface IInvoiceService
 {
     Task<bool> ApproveSalesInvoiceAsync(Invoice invoice, int customerId, List<InvoiceItemType> items);
     Task<bool> ApprovePurchaseInvoiceAsync(Invoice invoice, int supplierId, List<InvoiceItemType> items);

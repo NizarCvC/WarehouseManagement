@@ -1,11 +1,11 @@
 using WarehouseCore.DTOs.CreateDTOs;
 using WarehouseCore.Entities;
 
-namespace WarehouseDataAccess.Interfaces;
+namespace WarehouseServices.Interfaces;
 
-public interface IWarehouseRepository
+public interface IWarehouseService
 {
-    Task<Warehouse?> GetWarehouseByIdAsync(int customerId);
+    Task<Warehouse> GetWarehouseByIdAsync(int customerId);
     Task<List<Warehouse>> GetAllWarehousesAsync(int page = 1, int pageSize = 10);
     Task<int> GetWarehousesCountAsync();
     Task<int> AddNewWarehouseAsync(CreateWarehouseDto customer);
