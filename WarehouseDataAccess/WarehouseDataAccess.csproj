@@ -4,10 +4,15 @@
     <TargetFramework>net10.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
+    <UserSecretsId>afbc93bf-7913-45ef-9be1-666ae29a57c3</UserSecretsId>
   </PropertyGroup>
 
   <ItemGroup>
     <ProjectReference Include="../WarehouseCore/WarehouseCore.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Data.SqlClient" Version="7.0.1" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.UserSecrets" Version="10.0.7" />
+  </ItemGroup>
 </Project>

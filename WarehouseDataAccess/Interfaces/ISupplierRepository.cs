@@ -9,6 +9,6 @@ public interface ISupplierRepository
     Task<List<Supplier>> GetAllSuppliersAsync(int page = 1, int pageSize = 10);
     Task<int> GetSuppliersCountAsync();
     Task<int> AddNewSupplierAsync(CreateSupplierDto supplier);
-    Task<bool> UpdateSupplierAsync(CreateSupplierDto supplier);
+    Task<bool> UpdateSupplierAsync(int supplierId, CreateSupplierDto supplier);
     Task<bool> DeleteSupplierAsync(int supplierId);
 }

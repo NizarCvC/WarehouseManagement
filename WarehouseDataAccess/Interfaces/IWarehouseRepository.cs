@@ -5,10 +5,10 @@ namespace WarehouseDataAccess.Interfaces;
 
 public interface IWarehouseRepository
 {
-    Task<Warehouse?> GetWarehouseByIdAsync(int customerId);
+    Task<Warehouse?> GetWarehouseByIdAsync(int warehouseId);
     Task<List<Warehouse>> GetAllWarehousesAsync(int page = 1, int pageSize = 10);
     Task<int> GetWarehousesCountAsync();
-    Task<int> AddNewWarehouseAsync(CreateWarehouseDto customer);
-    Task<bool> UpdateWarehouseAsync(CreateWarehouseDto customer);
-    Task<bool> DeleteWarehouseAsync(int customerId);
+    Task<int> AddNewWarehouseAsync(CreateWarehouseDto warehouse);
+    Task<bool> UpdateWarehouseAsync(int warehouseId, CreateWarehouseDto warehouse);
+    Task<bool> DeleteWarehouseAsync(int warehouseId);
 }

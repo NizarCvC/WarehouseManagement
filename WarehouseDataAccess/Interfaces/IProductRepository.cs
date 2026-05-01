@@ -9,6 +9,6 @@ public interface IProductRepository
     Task<List<Product>> GetAllProductsAsync(int page = 1, int pageSize = 10);
     Task<int> GetProductsCountAsync();
     Task<int> AddNewProductAsync(CreateProductDto product);
-    Task<bool> UpdateProductAsync(CreateProductDto product);
+    Task<bool> UpdateProductAsync(int productId, CreateProductDto product);
     Task<bool> DeleteProductAsync(int productId);
 }
