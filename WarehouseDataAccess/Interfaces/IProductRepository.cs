@@ -5,10 +5,10 @@ namespace WarehouseDataAccess.Interfaces;
 
 public interface IProductRepository
 {   
-    Task<Product?> GetProductByIdAsync(int productId);
-    Task<List<Product>> GetAllProductsAsync(int page = 1, int pageSize = 10);
-    Task<int> GetProductsCountAsync();
-    Task<int> AddNewProductAsync(CreateProductDto product);
-    Task<bool> UpdateProductAsync(int productId, CreateProductDto product);
-    Task<bool> DeleteProductAsync(int productId);
+    Task<Product?> GetProductByIdAsync(int productId, CancellationToken ct);
+    Task<List<Product>> GetAllProductsAsync(CancellationToken ct, int page = 1, int pageSize = 10);
+    Task<int> GetProductsCountAsync(CancellationToken ct);
+    Task<int> AddNewProductAsync(CreateProductDto product, CancellationToken ct);
+    Task<bool> UpdateProductAsync(int productId, CreateProductDto product, CancellationToken ct);
+    Task<bool> DeleteProductAsync(int productId, CancellationToken ct);
 }

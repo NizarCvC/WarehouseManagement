@@ -6,10 +6,10 @@ namespace WarehouseServices.Interfaces;
 
 public interface ICustomerService
 {
-    Task<CustomerDto> GetCustomerByIdAsync(int customerId);
-    Task<List<CustomerDto>> GetAllCustomersAsync(int page = 1, int pageSize = 10);
-    Task<int> GetCustomersCountAsync();
-    Task<int> AddNewCustomerAsync(CreateCustomerDto customer);
-    Task<bool> UpdateCustomerAsync(CreateCustomerDto customer);
-    Task<bool> DeleteCustomerAsync(int customerId);
+    Task<CustomerDto> GetCustomerByIdAsync(int customerId, CancellationToken ct);
+    Task<List<CustomerDto>> GetAllCustomersAsync(CancellationToken ct, int page = 1, int pageSize = 10);
+    Task<int> GetCustomersCountAsync(CancellationToken ct);
+    Task<int> AddNewCustomerAsync(CreateCustomerDto customer, CancellationToken ct);
+    Task<bool> UpdateCustomerAsync(CreateCustomerDto customer, CancellationToken ct);
+    Task<bool> DeleteCustomerAsync(int customerId, CancellationToken ct);
 }
