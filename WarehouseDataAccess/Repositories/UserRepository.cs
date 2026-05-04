@@ -184,6 +184,7 @@ public class UserRepository : IUserRepository
         }
     }
 
+    // TODO: make it deactive user not deleting
     public async Task<bool> DeleteUserAsync(int userId, CancellationToken ct)
     {
         try
