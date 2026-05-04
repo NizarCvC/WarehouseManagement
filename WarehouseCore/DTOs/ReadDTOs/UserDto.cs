@@ -1,3 +1,5 @@
+using WarehouseCore.Entities;
+
 namespace WarehouseCore.DTOs.ReadDTOs;
 
 public class UserDto
@@ -9,4 +11,31 @@ public class UserDto
     public bool IsActive { get; set; }
     public required string RoleName { get; set; } 
     public DateTime CreatedAt { get; set; }
+
+    public static UserDto FromModel(User user)
+    {
+        if (user == null)
+            throw new ArgumentNullException(nameof(user), "Cannot create a dto from a null user");
+
+        UserDto dto = new UserDto()
+        {
+            UserID = user.UserID,
+            Name = user.Name,
+            Username = user.Username,
+            Email = user.Email,
+            IsActive = user.IsActive,
+            RoleName = user.Role.Name,
+            CreatedAt = user.CreatedAt
+        };
+
+        return dto;
+    }
+
+    public static List<UserDto> FromModels(List<User> users)
+    {
+        if (users == null)
+            throw new ArgumentNullException(nameof(users), "Cannot create dtos from a null collection");
+
+        return users.Select(FromModel).ToList();
+    }
 }

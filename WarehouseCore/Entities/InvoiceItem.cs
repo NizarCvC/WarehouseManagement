@@ -6,7 +6,7 @@ public class InvoiceItem
     public int InvoiceID { get; init; }
     public Invoice? Invoice { get; init; }
     public int ProductID { get; init; }
-    public Product? Product { get; init; }
+    public required Product Product { get; init; }
     public decimal Quantity { get; init; }
     public decimal UnitPrice { get; init; }
     public decimal DiscountAmount { get; init; }

@@ -10,5 +10,5 @@ public class User
     public bool IsActive { get; init; }
     public DateTime CreatedAt { get; init; }
     public int RoleID { get; init; }
-    public Role? Role { get; init; }
+    public required Role Role { get; init; }
 }

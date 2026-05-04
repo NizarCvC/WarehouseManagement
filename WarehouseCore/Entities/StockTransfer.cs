@@ -6,10 +6,13 @@ public class StockTransfer
     public required string TransferNumber { get; init; }
     public DateTime TransferDate { get; init; }
     public byte StatusID { get; init; }
-    public TransferStatus? TransferStatus { get; init; }
+    public required TransferStatus TransferStatus { get; init; }
     public string? Note { get; init; }
     public int FromWarehouseID { get; init; }
+    public required Warehouse FromWarehouse { get; init; }
     public int ToWarehouseID { get; init; }
+    public required Warehouse ToWarehouse { get; init; }
     public int CreatedByID { get; init; }
-    public List<StockTransferItem>? StockTransferItems;
+    public required User CreatedBy { get; init; }
+    public List<StockTransferItem>? StockTransferItems = default;
 }

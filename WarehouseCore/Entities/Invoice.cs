@@ -12,9 +12,9 @@ public class Invoice
     public decimal TotalAmount { get; init; }
     public string? Note { get; init; }
     public int WarehouseID { get; init; }
-    public Warehouse? Warehouse { get; init; }
+    public required Warehouse Warehouse { get; init; }
     public int CreatedByID { get; init; }
-    public User? CreatedBy { get; init; }
+    public required User CreatedBy { get; init; }
     public DateTime CreatedAt { get; init; }
-    public List<InvoiceItem>? InvoiceItems;
+    public List<InvoiceItem>? InvoiceItems = default;
 }

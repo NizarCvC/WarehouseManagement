@@ -16,5 +16,5 @@ public class Product
     public int? CategoryID { get; init; }
     public int UnitID { get; init; }
     public Category? Category { get; init; }
-    public Unit? Unit { get; init; }
+    public required Unit Unit { get; init; }
 }

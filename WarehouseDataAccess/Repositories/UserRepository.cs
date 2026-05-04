@@ -292,4 +292,61 @@ public class UserRepository : IUserRepository
         }
     }
 
+    public async Task<bool> IsUsernameExists(string username, CancellationToken ct)
+    {   
+        try
+        {   
+            bool IsFound = false;
+
+            string query = @"SELECT 1 FROM Users WHERE Username = @Username";
+
+            using (SqlConnection connection = new SqlConnection(_connectionString))
+            using (SqlCommand command = new SqlCommand(query, connection))
+            {
+                command.Parameters.AddWithValue("@Username", username);
+                connection.Open();
+
+                using (SqlDataReader reader = await command.ExecuteReaderAsync(ct))
+                {
+                    IsFound = reader.HasRows;
+                    return IsFound;
+                }
+            }
+
+        }
+        catch (Exception)
+        {
+            // TODO: Implement the logging functionality
+            return false;
+        }
+    }
+
+    public async Task<bool> IsUserIdExists(int userId, CancellationToken ct)
+    {
+        try
+        {   
+            bool IsFound = false;
+
+            string query = @"SELECT 1 FROM Users WHERE UserID = @UserID";
+
+            using (SqlConnection connection = new SqlConnection(_connectionString))
+            using (SqlCommand command = new SqlCommand(query, connection))
+            {
+                command.Parameters.AddWithValue("@UserID", userId);
+                connection.Open();
+
+                using (SqlDataReader reader = await command.ExecuteReaderAsync(ct))
+                {
+                    IsFound = reader.HasRows;
+                    return IsFound;
+                }
+            }
+
+        }
+        catch (Exception)
+        {
+            // TODO: Implement the logging functionality
+            return false;
+        }
+    }
 }
