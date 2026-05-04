@@ -2,6 +2,6 @@ namespace WarehouseCore.Entities;
 
 public class TransferStatus
 {
-    public byte StatusID { get; set; }
-    public required string Name { get; set; }
+    public byte StatusID { get; init; }
+    public required string Name { get; init; }
 }

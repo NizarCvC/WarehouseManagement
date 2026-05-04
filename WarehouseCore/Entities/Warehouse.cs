@@ -2,10 +2,10 @@ namespace WarehouseCore.Entities;
 
 public class Warehouse
 {
-    public int WarehouseID { get; set; }
-    public required string Name { get; set; }
-    public required string Code { get; set; }
-    public required string Location { get; set; }
-    public bool IsActive { get; set; }
-    public DateTime CreatedAt { get; set; }
+    public int WarehouseID { get; init; }
+    public required string Name { get; init; }
+    public required string Code { get; init; }
+    public required string Location { get; init; }
+    public bool IsActive { get; init; }
+    public DateTime CreatedAt { get; init; }
 }

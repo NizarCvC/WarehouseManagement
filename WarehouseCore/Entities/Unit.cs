@@ -2,6 +2,6 @@ namespace WarehouseCore.Entities;
 
 public class Unit
 {
-    public int UnitID { get; set; }
-    public required string Name { get; set; }
+    public int UnitID { get; init; }
+    public required string Name { get; init; }
 }

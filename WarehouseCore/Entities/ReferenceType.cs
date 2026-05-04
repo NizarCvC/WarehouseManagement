@@ -2,6 +2,6 @@ namespace WarehouseCore.Entities;
 
 public class ReferenceType
 {
-    public byte ReferenceTypeID { get; set; }
-    public required string Name { get; set; }
+    public byte ReferenceTypeID { get; init; }
+    public required string Name { get; init; }
 }

@@ -2,15 +2,19 @@ namespace WarehouseCore.Entities;
 
 public class InventoryTransaction
 {
-    public int InventoryTransactionID { get; set; }
-    public bool IsInward { get; set; }
-    public decimal Quantity { get; set; }
-    public decimal UnitCost { get; set; }
-    public int ReferenceID { get; set; }
-    public byte ReferenceTypeID { get; set; }
-    public string? Note { get; set; }
-    public int ProductID { get; set; }
-    public int WarehouseID { get; set; }
-    public int CreatedByID { get; set; }
-    public DateTime CreatedAt { get; set; }
+    public int InventoryTransactionID { get; init; }
+    public bool IsInward { get; init; }
+    public decimal Quantity { get; init; }
+    public decimal UnitCost { get; init; }
+    public int ReferenceID { get; init; }
+    public byte ReferenceTypeID { get; init; }
+    public ReferenceType? ReferenceType { get; init; }
+    public string? Note { get; init; }
+    public int ProductID { get; init; }
+    public Product? Product { get; init; }
+    public int WarehouseID { get; init; }
+    public Warehouse? Warehouse { get; init; }
+    public int CreatedByID { get; init; }
+    public User? CreatedBy { get; init; }
+    public DateTime CreatedAt { get; init; }
 }

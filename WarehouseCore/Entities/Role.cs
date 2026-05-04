@@ -2,6 +2,6 @@ namespace WarehouseCore.Entities;
 
 public class Role
 {
-    public int RoleID { get; set; }
-    public required string Name { get; set; }
+    public int RoleID { get; init; }
+    public required string Name { get; init; }
 }

@@ -2,12 +2,12 @@ namespace WarehouseCore.Entities;
 
 public class Supplier
 {
-    public int SupplierID { get; set; }
-    public required string Name { get; set; }
-    public required string Phone { get; set; }
-    public required string Email { get; set; }
-    public required string Address { get; set; }
-    public required string TaxNumber { get; set; }
-    public bool IsActive { get; set; }
-    public DateTime CreatedAt { get; set; }
+    public int SupplierID { get; init; }
+    public required string Name { get; init; }
+    public required string Phone { get; init; }
+    public required string Email { get; init; }
+    public required string Address { get; init; }
+    public required string TaxNumber { get; init; }
+    public bool IsActive { get; init; }
+    public DateTime CreatedAt { get; init; }
 }
