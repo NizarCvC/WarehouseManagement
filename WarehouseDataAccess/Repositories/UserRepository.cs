@@ -18,7 +18,8 @@ public class UserRepository : IUserRepository
     {
         try
         {
-            string query = @"SELECT UserID, Name, Username, Email, PasswordHash, IsActive, CreatedAt, RoleID FROM Users
+            string query = @"SELECT u.UserID, u.Name, u.Username, u.Email, u.PasswordHash, u.IsActive, u.CreatedAt, u.RoleID, r.Name AS RoleName FROM Users u
+                            INNER JOIN Roles r ON u.RoleID = r.RoleID
                             WHERE UserID = @UserID";
 
             using (SqlConnection connection = new SqlConnection(_connectionString))
@@ -40,7 +41,12 @@ public class UserRepository : IUserRepository
                             PasswordHash = reader.GetString(reader.GetOrdinal("PasswordHash")),
                             IsActive = reader.GetBoolean(reader.GetOrdinal("IsActive")),
                             CreatedAt = reader.GetDateTime(reader.GetOrdinal("CreatedAt")),
-                            RoleID = reader.GetInt32(reader.GetOrdinal("RoleID"))
+                            RoleID = reader.GetInt32(reader.GetOrdinal("RoleID")),
+                            Role = new Role()
+                            {
+                                RoleID = reader.GetInt32(reader.GetOrdinal("RoleID")),
+                                Name = reader.GetString(reader.GetOrdinal("RoleName"))
+                            }
                         };
                     }
                     else
@@ -62,7 +68,8 @@ public class UserRepository : IUserRepository
     {
         try
         {
-            string query = @"SELECT UserID, Name, Username, Email, PasswordHash, IsActive, CreatedAt, RoleID FROM Users
+            string query = @"SELECT u.UserID, u.Name, u.Username, u.Email, u.PasswordHash, u.IsActive, u.CreatedAt, u.RoleID, r.Name AS RoleName FROM Users u
+                            INNER JOIN Roles r ON u.RoleID = r.RoleID
                             WHERE Username = @Username";
 
             using (SqlConnection connection = new SqlConnection(_connectionString))
@@ -84,7 +91,12 @@ public class UserRepository : IUserRepository
                             PasswordHash = reader.GetString(reader.GetOrdinal("PasswordHash")),
                             IsActive = reader.GetBoolean(reader.GetOrdinal("IsActive")),
                             CreatedAt = reader.GetDateTime(reader.GetOrdinal("CreatedAt")),
-                            RoleID = reader.GetInt32(reader.GetOrdinal("RoleID"))
+                            RoleID = reader.GetInt32(reader.GetOrdinal("RoleID")),
+                            Role = new Role()
+                            {
+                                RoleID = reader.GetInt32(reader.GetOrdinal("RoleID")),
+                                Name = reader.GetString(reader.GetOrdinal("RoleName"))
+                            }
                         };
                     }
                     else
@@ -202,8 +214,10 @@ public class UserRepository : IUserRepository
         try
         {
             List<User> users = new List<User>();
-            string query = @"SELECT UserID, Name, Username, Email, PasswordHash, IsActive, CreatedAt, RoleID
-                            FROM Users
+            string query = @"SELECT u.UserID, u.Name, u.Username, u.Email, u.PasswordHash,
+                            u.IsActive, u.CreatedAt, u.RoleID, r.Name AS RoleName
+                            FROM Users u
+                            INNER JOIN Roles r ON u.RoleID = r.RoleID
                             ORDER BY UserID
                             OFFSET (@PageNumber - 1) * @RowsPerPage ROWS
                             FETCH NEXT @RowsPerPage ROWS ONLY;";
@@ -228,12 +242,17 @@ public class UserRepository : IUserRepository
                             PasswordHash = reader.GetString(reader.GetOrdinal("PasswordHash")),
                             IsActive = reader.GetBoolean(reader.GetOrdinal("IsActive")),
                             CreatedAt = reader.GetDateTime(reader.GetOrdinal("CreatedAt")),
-                            RoleID = reader.GetInt32(reader.GetOrdinal("RoleID"))
+                            RoleID = reader.GetInt32(reader.GetOrdinal("RoleID")),
+                            Role = new Role()
+                            {
+                                RoleID = reader.GetInt32(reader.GetOrdinal("RoleID")),
+                                Name = reader.GetString(reader.GetOrdinal("RoleName"))
+                            }
                         };
-                        
+
                         users.Add(user);
                     }
-                    
+
                     return users;
                 }
             }
