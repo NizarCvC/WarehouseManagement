@@ -6,6 +6,7 @@ namespace WarehouseServices.Interfaces;
 public interface IUserService
 {
     Task<UserDto?> GetUserByIdAsync(int userId, CancellationToken ct);
+    Task<UserDto?> GetUserByUsernameAsync(string username, CancellationToken ct);
     Task<List<UserDto>> GetAllUsersAsync(CancellationToken ct, int page = 1, int pageSize = 10);
     Task<int> GetUsersCountAsync(CancellationToken ct);
     Task<int> AddNewUserAsync(CreateUserDto userDto, CancellationToken ct);

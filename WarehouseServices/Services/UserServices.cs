@@ -19,6 +19,16 @@ public class UserServices(IUserRepository userRepository) : IUserService
         return (userInfo is not null) ? UserDto.FromModel(userInfo) : throw new InternalServerErrorException();
     }
 
+    public async Task<UserDto?> GetUserByUsernameAsync(string username, CancellationToken ct)
+    {
+        if (!await userRepository.IsUsernameExists(username, ct))
+            throw new NotFoundException($"The user by username '{username}' not exists.");
+
+        var userInfo = await userRepository.GetByUsernameAsync(username, ct);
+
+        return (userInfo is not null) ? UserDto.FromModel(userInfo) : throw new InternalServerErrorException();
+    }
+
     public async Task<List<UserDto>> GetAllUsersAsync(CancellationToken ct, int page = 1, int pageSize = 10)
     {
         List<User> users = await userRepository.GetAllUsersAsync(ct, page, pageSize);
@@ -54,16 +64,16 @@ public class UserServices(IUserRepository userRepository) : IUserService
         string userDtoPassword = Hashing.HashPasswordOnly(userDto.Password);
 
         userDto.Password = (userDtoPassword != userInfo.PasswordHash) ?
-            Hashing.HashPasswordOnly(userDto.Password) 
+            Hashing.HashPasswordOnly(userDto.Password)
             : userDto.Password = userInfo.PasswordHash;
-        
+
         bool isSuccesses = await userRepository.UpdateUserAsync(userId, userDto, ct);
 
         return isSuccesses ? true : throw new InternalServerErrorException();
     }
 
     public async Task<bool> DeleteUserAsync(int userId, CancellationToken ct)
-    {   
+    {
         if (!await userRepository.IsUserIdExists(userId, ct))
             throw new NotFoundException($"The user with ID: {userId} not exists.");
 

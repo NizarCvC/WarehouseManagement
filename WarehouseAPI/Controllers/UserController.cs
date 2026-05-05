@@ -36,6 +36,13 @@ public class UserController(IUserService userService) : ControllerBase
         return Ok(user);
     }
 
+    [HttpGet("{username:alpha}", Name = "GetByUsername")]
+    public async Task<ActionResult<UserDto>> GetUserByUsername(string username, CancellationToken ct)
+    {
+        var userInfo = await userService.GetUserByUsernameAsync(username, ct);
+        return Ok(userInfo);
+    }   
+
     [HttpGet]
     public async Task<IActionResult> GetPagedUsers(CancellationToken ct, [FromQuery] int page = 1, [FromQuery] int pageSize = 10)
     {
