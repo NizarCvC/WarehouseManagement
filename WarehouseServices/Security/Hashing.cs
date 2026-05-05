@@ -1,7 +1,7 @@
 using System.Security.Cryptography;
 using System.Text;
 
-namespace WarehouseServices.securty;
+namespace WarehouseServices.Security;
 
 public static class Hashing
 {

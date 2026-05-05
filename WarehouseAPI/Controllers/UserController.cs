@@ -10,6 +10,7 @@ namespace WarehouseAPI.Controllers;
 [Route("api/Users")]
 public class UserController(IUserService userService) : ControllerBase
 {
+    [HttpOptions]
     public IActionResult UserOptions()
     {
         Response.Headers.Append("Allow", "GET, HEAD, POST, PUT, DELETE, OPTIONS");
@@ -27,15 +28,11 @@ public class UserController(IUserService userService) : ControllerBase
     {
         return await userService.IsUsernameExists(username, ct) ? Ok() : NotFound();
     }
-    
+
     [HttpGet("{userId:int}", Name = "GetUserById")]
     public async Task<ActionResult<UserDto>> GetUserById(int userId, CancellationToken ct)
     {
         var user = await userService.GetUserByIdAsync(userId, ct);
-
-        if (user is null)
-            return NotFound($"The user with ID: {userId} not exists.");
-
         return Ok(user);
     }
 
@@ -61,9 +58,6 @@ public class UserController(IUserService userService) : ControllerBase
     [HttpPost]
     public async Task<IActionResult> CreateUser(CreateUserDto userDto, CancellationToken ct)
     {
-        if (await userService.IsUsernameExists(userDto.Username, ct))
-            return Conflict($"The user with username {userDto.Username} is already used.");
-
         int newUserId = await userService.AddNewUserAsync(userDto, ct);
 
         return CreatedAtRoute(routeName: nameof(GetUserById),
@@ -73,35 +67,14 @@ public class UserController(IUserService userService) : ControllerBase
     [HttpPut("{userId:int}")]
     public async Task<IActionResult> UpdateUser(int userId, CreateUserDto userDto, CancellationToken ct)
     {
-        var user = await userService.GetUserByIdAsync(userId, ct);
-
-        if (user is null)
-            return NotFound($"The user with ID: {userId} not exists.");
-
-        bool isUsernameUsed = await userService.IsUsernameExists(userDto.Username, ct);
-        
-        if (user.Username != userDto.Username && isUsernameUsed)
-            return Conflict($"The username: {userDto.Username} is already used.");
-
-        bool isSeccessed = await userService.UpdateUserAsync(userId, userDto, ct);
-
-        if (!isSeccessed)
-            return StatusCode(500, "Failed to update user");
-        
+        await userService.UpdateUserAsync(userId, userDto, ct);
         return NoContent();
     }
 
     [HttpDelete("{userId:int}")]
     public async Task<IActionResult> DeleteUser(int userId, CancellationToken ct)
     {
-        if (!await userService.IsUserIdExists(userId, ct))
-            return NotFound($"The user with ID: {userId} not exists.");
-
-        bool isSeccessed = await userService.DeleteUserAsync(userId, ct);
-
-        if (!isSeccessed)
-            return StatusCode(500, "Failed to delete user");
-        
+        await userService.DeleteUserAsync(userId, ct);
         return NoContent();
     }
 

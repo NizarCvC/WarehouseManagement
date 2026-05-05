@@ -9,7 +9,7 @@ public interface ISupplierService
     Task<SupplierDto?> GetSupplierByIdAsync(int supplierId, CancellationToken ct);
     Task<List<SupplierDto>> GetAllSuppliersAsync(CancellationToken ct, int page = 1, int pageSize = 10);
     Task<int> GetSuppliersCountAsync(CancellationToken ct);
-    Task<int> AddNewSupplierAsync(CreateSupplierDto supplier, CancellationToken ct);
-    Task<bool> UpdateSupplierAsync(int supplierId, CreateSupplierDto supplier, CancellationToken ct);
+    Task<int> AddNewSupplierAsync(CreateSupplierDto supplierDto, CancellationToken ct);
+    Task<bool> UpdateSupplierAsync(int supplierId, CreateSupplierDto supplierDto, CancellationToken ct);
     Task<bool> DeleteSupplierAsync(int supplierId, CancellationToken ct);
 }

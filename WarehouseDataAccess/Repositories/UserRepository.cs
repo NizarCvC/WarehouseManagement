@@ -184,13 +184,13 @@ public class UserRepository : IUserRepository
         }
     }
 
-    // TODO: make it deactive user not deleting
     public async Task<bool> DeleteUserAsync(int userId, CancellationToken ct)
     {
         try
         {
             int rowsAffected = 0;
-            string query = @"DELETE FROM Users WHERE UserID = @UserID";
+            string query = @"UPDATE Users 
+                            SET IsActive = 0 WHERE UserID = @UserID";
 
             using (SqlConnection connection = new SqlConnection(_connectionString))
             using (SqlCommand command = new SqlCommand(query, connection))
@@ -294,9 +294,9 @@ public class UserRepository : IUserRepository
     }
 
     public async Task<bool> IsUsernameExists(string username, CancellationToken ct)
-    {   
+    {
         try
-        {   
+        {
             bool IsFound = false;
 
             string query = @"SELECT 1 FROM Users WHERE Username = @Username";
@@ -325,7 +325,7 @@ public class UserRepository : IUserRepository
     public async Task<bool> IsUserIdExists(int userId, CancellationToken ct)
     {
         try
-        {   
+        {
             bool IsFound = false;
 
             string query = @"SELECT 1 FROM Users WHERE UserID = @UserID";
