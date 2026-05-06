@@ -14,13 +14,12 @@ builder.Services.AddProblemDetails(options =>
     }
 );
 builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
-builder.Services.AddWarehouseServices();
 builder.Services.AddAuthentication(options =>
 {
     options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
     options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
 }).AddJwtBearer(options =>
-{   
+{
     var jwtSettings = builder.Configuration.GetSection("JwtSettings");
     var jwtKey = builder.Configuration["Jwt:Key"];
     options.TokenValidationParameters = new()
@@ -34,12 +33,20 @@ builder.Services.AddAuthentication(options =>
         IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey!))
     };
 });
-builder.Services.AddAuthorization();
+builder.Services.AddAuthorization(options =>
+{
+    options.AddPolicy("System Administrator", policy => policy.RequireRole("System Administrator"));
+    options.AddPolicy("Warehouse Manager", policy => policy.RequireRole("Warehouse Manager"));
+    options.AddPolicy("Sales Representative", policy => policy.RequireRole("Sales Representative"));
+    options.AddPolicy("Purchasing Officer", policy => policy.RequireRole("Purchasing Officer"));
+    options.AddPolicy("Accountant", policy => policy.RequireRole("Accountant"));
+});
+builder.Services.AddWarehouseServices();
 
 var app = builder.Build();
 
 app.UseExceptionHandler();
-app.UseStatusCodePages(); 
+app.UseStatusCodePages();
 
 app.UseAuthentication();
 app.UseAuthorization();

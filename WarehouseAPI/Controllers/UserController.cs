@@ -1,4 +1,5 @@
 using M02.BuildingRESTFulAPI.Responses;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using WarehouseCore.DTOs.CreateDTOs;
 using WarehouseCore.DTOs.ReadDTOs;
@@ -8,6 +9,7 @@ namespace WarehouseAPI.Controllers;
 
 [ApiController]
 [Route("api/Users")]
+[Authorize(Policy = "System Administrator")]
 public class UserController(IUserService userService) : ControllerBase
 {
     [HttpOptions]

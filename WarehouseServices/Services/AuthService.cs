@@ -39,7 +39,7 @@ public class AuthService(IConfiguration configuration, IUserRepository userRepos
             new Claim(ClaimTypes.Name, user.Username),
             new Claim(ClaimTypes.Email, user.Email),
             new Claim(ClaimTypes.Role, user.Role?.Name ?? "User"),
-            new Claim("FullName", user.Name) 
+            new Claim("full_name", user.Name) 
         };
 
         var descriptor = new SecurityTokenDescriptor()
@@ -55,7 +55,6 @@ public class AuthService(IConfiguration configuration, IUserRepository userRepos
         };
 
         var tokenHandler = new JwtSecurityTokenHandler();
-
         var securityToken = tokenHandler.CreateToken(descriptor);
 
         return new AuthResponseDto() {
