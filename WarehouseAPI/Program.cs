@@ -1,5 +1,8 @@
+using System.Text;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
 using WarehouseAPI;
-using WarehouseAPI.Filters;
+using WarehouseAPI.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -12,6 +15,26 @@ builder.Services.AddProblemDetails(options =>
 );
 builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
 builder.Services.AddWarehouseServices();
+builder.Services.AddAuthentication(options =>
+{
+    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+}).AddJwtBearer(options =>
+{   
+    var jwtSettings = builder.Configuration.GetSection("JwtSettings");
+    var jwtKey = builder.Configuration["Jwt:Key"];
+    options.TokenValidationParameters = new()
+    {
+        ValidateIssuer = true,
+        ValidateAudience = true,
+        ValidateLifetime = true,
+        ValidateIssuerSigningKey = true,
+        ValidIssuer = jwtSettings["Issuer"],
+        ValidAudience = jwtSettings["Audience"],
+        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey!))
+    };
+});
+builder.Services.AddAuthorization();
 
 var app = builder.Build();
 

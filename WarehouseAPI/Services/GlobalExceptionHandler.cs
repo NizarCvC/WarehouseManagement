@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Data.SqlClient; 
 using WarehouseServices.Exceptions;
 
-namespace WarehouseAPI.Filters;
+namespace WarehouseAPI.Services;
 
 public class GlobalExceptionHandler(IProblemDetailsService problemDetailsService,
     ILogger<GlobalExceptionHandler> logger) : IExceptionHandler
