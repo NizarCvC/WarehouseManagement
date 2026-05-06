@@ -16,206 +16,52 @@ public class UserRepository : IUserRepository
 
     public async Task<User?> GetUserByIdAsync(int userId, CancellationToken ct)
     {
-        try
-        {
-            string query = @"SELECT u.UserID, u.Name, u.Username, u.Email, u.PasswordHash, u.IsActive, u.CreatedAt, u.RoleID, r.Name AS RoleName FROM Users u
+        string query = @"SELECT u.UserID, u.Name, u.Username, u.Email, u.PasswordHash, u.IsActive, u.CreatedAt, u.RoleID, r.Name AS RoleName FROM Users u
                             INNER JOIN Roles r ON u.RoleID = r.RoleID
                             WHERE UserID = @UserID";
 
-            using (SqlConnection connection = new SqlConnection(_connectionString))
-            using (SqlCommand command = new SqlCommand(query, connection))
-            {
-                command.Parameters.AddWithValue("@UserID", userId);
-                connection.Open();
-
-                using (SqlDataReader reader = await command.ExecuteReaderAsync(ct))
-                {
-                    if (await reader.ReadAsync(ct))
-                    {
-                        return new User()
-                        {
-                            UserID = reader.GetInt32(reader.GetOrdinal("UserID")),
-                            Name = reader.GetString(reader.GetOrdinal("Name")),
-                            Username = reader.GetString(reader.GetOrdinal("Username")),
-                            Email = reader.GetString(reader.GetOrdinal("Email")),
-                            PasswordHash = reader.GetString(reader.GetOrdinal("PasswordHash")),
-                            IsActive = reader.GetBoolean(reader.GetOrdinal("IsActive")),
-                            CreatedAt = reader.GetDateTime(reader.GetOrdinal("CreatedAt")),
-                            RoleID = reader.GetInt32(reader.GetOrdinal("RoleID")),
-                            Role = new Role()
-                            {
-                                RoleID = reader.GetInt32(reader.GetOrdinal("RoleID")),
-                                Name = reader.GetString(reader.GetOrdinal("RoleName"))
-                            }
-                        };
-                    }
-                    else
-                    {
-                        return null;
-                    }
-                }
-            }
-
-        }
-        catch (Exception)
+        using (SqlConnection connection = new SqlConnection(_connectionString))
+        using (SqlCommand command = new SqlCommand(query, connection))
         {
-            // TODO: Implement the logging functionality
-            return null;
+            command.Parameters.AddWithValue("@UserID", userId);
+            connection.Open();
+
+            using (SqlDataReader reader = await command.ExecuteReaderAsync(ct))
+            {
+                if (await reader.ReadAsync(ct))
+                    return MapReaderToUser(reader);
+                else
+                    return null;
+            }
         }
     }
 
     public async Task<User?> GetByUsernameAsync(string username, CancellationToken ct)
     {
-        try
-        {
-            string query = @"SELECT u.UserID, u.Name, u.Username, u.Email, u.PasswordHash, u.IsActive, u.CreatedAt, u.RoleID, r.Name AS RoleName FROM Users u
+        string query = @"SELECT u.UserID, u.Name, u.Username, u.Email, u.PasswordHash, u.IsActive, u.CreatedAt, u.RoleID, r.Name AS RoleName FROM Users u
                             INNER JOIN Roles r ON u.RoleID = r.RoleID
                             WHERE Username = @Username";
 
-            using (SqlConnection connection = new SqlConnection(_connectionString))
-            using (SqlCommand command = new SqlCommand(query, connection))
+        using (SqlConnection connection = new SqlConnection(_connectionString))
+        using (SqlCommand command = new SqlCommand(query, connection))
+        {
+            command.Parameters.AddWithValue("@Username", username);
+            connection.Open();
+
+            using (SqlDataReader reader = await command.ExecuteReaderAsync(ct))
             {
-                command.Parameters.AddWithValue("@Username", username);
-                connection.Open();
-
-                using (SqlDataReader reader = await command.ExecuteReaderAsync(ct))
-                {
-                    if (await reader.ReadAsync(ct))
-                    {
-                        return new User()
-                        {
-                            UserID = reader.GetInt32(reader.GetOrdinal("UserID")),
-                            Name = reader.GetString(reader.GetOrdinal("Name")),
-                            Username = reader.GetString(reader.GetOrdinal("Username")),
-                            Email = reader.GetString(reader.GetOrdinal("Email")),
-                            PasswordHash = reader.GetString(reader.GetOrdinal("PasswordHash")),
-                            IsActive = reader.GetBoolean(reader.GetOrdinal("IsActive")),
-                            CreatedAt = reader.GetDateTime(reader.GetOrdinal("CreatedAt")),
-                            RoleID = reader.GetInt32(reader.GetOrdinal("RoleID")),
-                            Role = new Role()
-                            {
-                                RoleID = reader.GetInt32(reader.GetOrdinal("RoleID")),
-                                Name = reader.GetString(reader.GetOrdinal("RoleName"))
-                            }
-                        };
-                    }
-                    else
-                    {
-                        return null;
-                    }
-                }
+                if (await reader.ReadAsync(ct))
+                    return MapReaderToUser(reader);
+                else
+                    return null;
             }
-
-        }
-        catch (Exception)
-        {
-            // TODO: Implement the logging functionality
-            return null;
-        }
-    }
-
-    public async Task<int> AddNewUserAsync(CreateUserDto user, CancellationToken ct)
-    {
-        try
-        {
-            int newUserId = -1;
-            string query = @"INSERT INTO Users (Name, Username, Email, PasswordHash, RoleID)
-                        VALUES (@Name, @Username, @Email, @PasswordHash, @RoleID)
-                        SELECT SCOPE_IDENTITY()";
-
-            using (SqlConnection connection = new SqlConnection(_connectionString))
-            using (SqlCommand command = new SqlCommand(query, connection))
-            {
-                command.Parameters.AddWithValue("@Name", user.Name);
-                command.Parameters.AddWithValue("@Username", user.Username);
-                command.Parameters.AddWithValue("@Email", user.Email);
-                command.Parameters.AddWithValue("@PasswordHash", user.Password);
-                command.Parameters.AddWithValue("@RoleID", user.RoleID);
-                connection.Open();
-
-                object Result = await command.ExecuteScalarAsync(ct);
-
-                if (Result != null && int.TryParse(Result.ToString(), out int InsertedID))
-                    newUserId = InsertedID;
-
-                return newUserId;
-            }
-        }
-        catch (Exception)
-        {
-            // TODO: Implement the logging functionality
-            return -1;
-        }
-    }
-
-    public async Task<bool> UpdateUserAsync(int userId, CreateUserDto user, CancellationToken ct)
-    {
-        try
-        {
-            int rowsAffected = 0;
-            string query = @"UPDATE Users 
-                            SET Name = @Name,
-                                Username = @Username,
-                                Email = @Email,
-                                PasswordHash = @PasswordHash,
-                                RoleID = @RoleID
-                            WHERE UserID = @UserID";
-
-            using (SqlConnection connection = new SqlConnection(_connectionString))
-            using (SqlCommand command = new SqlCommand(query, connection))
-            {
-                command.Parameters.AddWithValue("@UserID", userId);
-                command.Parameters.AddWithValue("@Name", user.Name);
-                command.Parameters.AddWithValue("@Username", user.Username);
-                command.Parameters.AddWithValue("@Email", user.Email);
-                command.Parameters.AddWithValue("@PasswordHash", user.Password);
-                command.Parameters.AddWithValue("@RoleID", user.RoleID);
-                connection.Open();
-
-                rowsAffected = await command.ExecuteNonQueryAsync(ct);
-
-                return rowsAffected > 0;
-            }
-        }
-        catch (Exception)
-        {
-            // TODO: Implement the logging functionality
-            return false;
-        }
-    }
-
-    public async Task<bool> DeleteUserAsync(int userId, CancellationToken ct)
-    {
-        try
-        {
-            int rowsAffected = 0;
-            string query = @"UPDATE Users 
-                            SET IsActive = 0 WHERE UserID = @UserID";
-
-            using (SqlConnection connection = new SqlConnection(_connectionString))
-            using (SqlCommand command = new SqlCommand(query, connection))
-            {
-                command.Parameters.AddWithValue("@UserID", userId);
-                connection.Open();
-
-                rowsAffected = await command.ExecuteNonQueryAsync(ct);
-
-                return rowsAffected > 0;
-            }
-        }
-        catch (Exception)
-        {
-            // TODO: Implement the logging functionality
-            return false;
         }
     }
 
     public async Task<List<User>> GetAllUsersAsync(CancellationToken ct, int page = 1, int pageSize = 10)
     {
-        try
-        {
-            List<User> users = new List<User>();
-            string query = @"SELECT u.UserID, u.Name, u.Username, u.Email, u.PasswordHash,
+        List<User> users = new List<User>();
+        string query = @"SELECT u.UserID, u.Name, u.Username, u.Email, u.PasswordHash,
                             u.IsActive, u.CreatedAt, u.RoleID, r.Name AS RoleName
                             FROM Users u
                             INNER JOIN Roles r ON u.RoleID = r.RoleID
@@ -223,131 +69,160 @@ public class UserRepository : IUserRepository
                             OFFSET (@PageNumber - 1) * @RowsPerPage ROWS
                             FETCH NEXT @RowsPerPage ROWS ONLY;";
 
-            using (SqlConnection connection = new SqlConnection(_connectionString))
-            using (SqlCommand command = new SqlCommand(query, connection))
-            {
-                command.Parameters.AddWithValue("@PageNumber", page);
-                command.Parameters.AddWithValue("@RowsPerPage", pageSize);
-                connection.Open();
-
-                using (SqlDataReader reader = await command.ExecuteReaderAsync(ct))
-                {
-                    while (await reader.ReadAsync(ct))
-                    {
-                        User user = new User()
-                        {
-                            UserID = reader.GetInt32(reader.GetOrdinal("UserID")),
-                            Name = reader.GetString(reader.GetOrdinal("Name")),
-                            Username = reader.GetString(reader.GetOrdinal("Username")),
-                            Email = reader.GetString(reader.GetOrdinal("Email")),
-                            PasswordHash = reader.GetString(reader.GetOrdinal("PasswordHash")),
-                            IsActive = reader.GetBoolean(reader.GetOrdinal("IsActive")),
-                            CreatedAt = reader.GetDateTime(reader.GetOrdinal("CreatedAt")),
-                            RoleID = reader.GetInt32(reader.GetOrdinal("RoleID")),
-                            Role = new Role()
-                            {
-                                RoleID = reader.GetInt32(reader.GetOrdinal("RoleID")),
-                                Name = reader.GetString(reader.GetOrdinal("RoleName"))
-                            }
-                        };
-
-                        users.Add(user);
-                    }
-
-                    return users;
-                }
-            }
-
-        }
-        catch (Exception)
+        using (SqlConnection connection = new SqlConnection(_connectionString))
+        using (SqlCommand command = new SqlCommand(query, connection))
         {
-            // TODO: Implement the logging functionality
-            return new List<User>();
+            command.Parameters.AddWithValue("@PageNumber", page);
+            command.Parameters.AddWithValue("@RowsPerPage", pageSize);
+            connection.Open();
+
+            using (SqlDataReader reader = await command.ExecuteReaderAsync(ct))
+            {
+                while (await reader.ReadAsync(ct))
+                {
+                    User user = MapReaderToUser(reader);
+                    users.Add(user);
+                }
+
+                return users;
+            }
         }
     }
 
     public async Task<int> GetUsersCountAsync(CancellationToken ct)
     {
-        try
+        int countNumber = 0;
+        string query = @"SELECT COUNT(*) FROM Users";
+
+        using (SqlConnection connection = new SqlConnection(_connectionString))
+        using (SqlCommand command = new SqlCommand(query, connection))
         {
-            int countNumber = 0;
-            string query = @"SELECT COUNT(*) FROM Users";
+            connection.Open();
 
-            using (SqlConnection connection = new SqlConnection(_connectionString))
-            using (SqlCommand command = new SqlCommand(query, connection))
-            {
-                connection.Open();
+            object Result = await command.ExecuteScalarAsync(ct);
 
-                object Result = await command.ExecuteScalarAsync(ct);
+            if (Result != null && int.TryParse(Result.ToString(), out int countNum))
+                countNumber = countNum;
 
-                if (Result != null && int.TryParse(Result.ToString(), out int countNum))
-                    countNumber = countNum;
-
-                return countNumber;
-            }
-        }
-        catch (Exception)
-        {
-            // TODO: Implement the logging functionality
-            return -1;
+            return countNumber;
         }
     }
 
-    public async Task<bool> IsUsernameExists(string username, CancellationToken ct)
+    public async Task<int> AddNewUserAsync(CreateUserDto user, CancellationToken ct)
     {
-        try
+        int newUserId = -1;
+        string query = @"INSERT INTO Users (Name, Username, Email, PasswordHash, RoleID)
+                        VALUES (@Name, @Username, @Email, @PasswordHash, @RoleID)
+                        SELECT SCOPE_IDENTITY()";
+
+        using (SqlConnection connection = new SqlConnection(_connectionString))
+        using (SqlCommand command = new SqlCommand(query, connection))
         {
-            bool IsFound = false;
+            command.Parameters.AddWithValue("@Name", user.Name);
+            command.Parameters.AddWithValue("@Username", user.Username);
+            command.Parameters.AddWithValue("@Email", user.Email);
+            command.Parameters.AddWithValue("@PasswordHash", user.Password);
+            command.Parameters.AddWithValue("@RoleID", user.RoleID);
+            connection.Open();
 
-            string query = @"SELECT 1 FROM Users WHERE Username = @Username";
+            object result = await command.ExecuteScalarAsync(ct);
+            if (result != null && result != DBNull.Value)
+                newUserId = Convert.ToInt32(result);
 
-            using (SqlConnection connection = new SqlConnection(_connectionString))
-            using (SqlCommand command = new SqlCommand(query, connection))
-            {
-                command.Parameters.AddWithValue("@Username", username);
-                connection.Open();
-
-                using (SqlDataReader reader = await command.ExecuteReaderAsync(ct))
-                {
-                    IsFound = reader.HasRows;
-                    return IsFound;
-                }
-            }
-
+            return newUserId;
         }
-        catch (Exception)
+    }
+
+    public async Task<bool> UpdateUserAsync(int userId, CreateUserDto user, CancellationToken ct)
+    {
+        string query = @"UPDATE Users 
+                            SET Name = @Name,
+                                Username = @Username,
+                                Email = @Email,
+                                PasswordHash = @PasswordHash,
+                                RoleID = @RoleID
+                            WHERE UserID = @UserID";
+
+        using (SqlConnection connection = new SqlConnection(_connectionString))
+        using (SqlCommand command = new SqlCommand(query, connection))
         {
-            // TODO: Implement the logging functionality
-            return false;
+            command.Parameters.AddWithValue("@UserID", userId);
+            command.Parameters.AddWithValue("@Name", user.Name);
+            command.Parameters.AddWithValue("@Username", user.Username);
+            command.Parameters.AddWithValue("@Email", user.Email);
+            command.Parameters.AddWithValue("@PasswordHash", user.Password);
+            command.Parameters.AddWithValue("@RoleID", user.RoleID);
+            connection.Open();
+
+            int rowsAffected = await command.ExecuteNonQueryAsync(ct);
+
+            return rowsAffected > 0;
+        }
+    }
+
+    public async Task<bool> DeleteUserAsync(int userId, CancellationToken ct)
+    {
+        string query = @"UPDATE Users SET IsActive = 0 WHERE UserID = @UserID";
+
+        using (SqlConnection connection = new SqlConnection(_connectionString))
+        using (SqlCommand command = new SqlCommand(query, connection))
+        {
+            command.Parameters.AddWithValue("@UserID", userId);
+            connection.Open();
+
+            int rowsAffected = await command.ExecuteNonQueryAsync(ct);
+
+            return rowsAffected > 0;
         }
     }
 
     public async Task<bool> IsUserIdExists(int userId, CancellationToken ct)
     {
-        try
+        string query = @"SELECT 1 FROM Users WHERE UserID = @UserID";
+
+        using (SqlConnection connection = new SqlConnection(_connectionString))
+        using (SqlCommand command = new SqlCommand(query, connection))
         {
-            bool IsFound = false;
+            command.Parameters.AddWithValue("@UserID", userId);
+            connection.Open();
 
-            string query = @"SELECT 1 FROM Users WHERE UserID = @UserID";
+            object? result = await command.ExecuteScalarAsync(ct);
+            return result != null;
+        }
+    }
 
-            using (SqlConnection connection = new SqlConnection(_connectionString))
-            using (SqlCommand command = new SqlCommand(query, connection))
+    public async Task<bool> IsUsernameExists(string username, CancellationToken ct)
+    {
+        string query = @"SELECT 1 FROM Users WHERE Username = @Username";
+
+        using (SqlConnection connection = new SqlConnection(_connectionString))
+        using (SqlCommand command = new SqlCommand(query, connection))
+        {
+            command.Parameters.AddWithValue("@Username", username);
+            connection.Open();
+
+            object? result = await command.ExecuteScalarAsync(ct);
+            return result != null;
+        }
+    }
+
+    private User MapReaderToUser(SqlDataReader reader)
+    {
+        return new User()
+        {
+            UserID = reader.GetInt32(reader.GetOrdinal("UserID")),
+            Name = reader.GetString(reader.GetOrdinal("Name")),
+            Username = reader.GetString(reader.GetOrdinal("Username")),
+            Email = reader.GetString(reader.GetOrdinal("Email")),
+            PasswordHash = reader.GetString(reader.GetOrdinal("PasswordHash")),
+            IsActive = reader.GetBoolean(reader.GetOrdinal("IsActive")),
+            CreatedAt = reader.GetDateTime(reader.GetOrdinal("CreatedAt")),
+            RoleID = reader.GetInt32(reader.GetOrdinal("RoleID")),
+            Role = new Role()
             {
-                command.Parameters.AddWithValue("@UserID", userId);
-                connection.Open();
-
-                using (SqlDataReader reader = await command.ExecuteReaderAsync(ct))
-                {
-                    IsFound = reader.HasRows;
-                    return IsFound;
-                }
+                RoleID = reader.GetInt32(reader.GetOrdinal("RoleID")),
+                Name = reader.GetString(reader.GetOrdinal("RoleName"))
             }
-
-        }
-        catch (Exception)
-        {
-            // TODO: Implement the logging functionality
-            return false;
-        }
+        };
     }
 }

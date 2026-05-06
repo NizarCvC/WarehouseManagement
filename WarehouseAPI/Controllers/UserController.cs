@@ -17,26 +17,26 @@ public class UserController(IUserService userService) : ControllerBase
         return NoContent();
     }
 
-    [HttpHead("{userId:int}")]
+    [HttpHead("by-id/{userId:int}")]
     public async Task<IActionResult> HeadUser(int userId, CancellationToken ct)
     {
         return await userService.IsUserIdExists(userId, ct) ? Ok() : NotFound();
     }
 
-    [HttpHead("{username:alpha}")]
+    [HttpHead("by-username/{username}")]
     public async Task<IActionResult> HeadUser(string username, CancellationToken ct)
     {
         return await userService.IsUsernameExists(username, ct) ? Ok() : NotFound();
     }
 
-    [HttpGet("{userId:int}", Name = "GetUserById")]
+    [HttpGet("by-id/{userId:int}", Name = "GetUserById")]
     public async Task<ActionResult<UserDto>> GetUserById(int userId, CancellationToken ct)
     {
         var user = await userService.GetUserByIdAsync(userId, ct);
         return Ok(user);
     }
 
-    [HttpGet("{username:alpha}", Name = "GetByUsername")]
+    [HttpGet("by-username/{username}", Name = "GetByUsername")]
     public async Task<ActionResult<UserDto>> GetUserByUsername(string username, CancellationToken ct)
     {
         var userInfo = await userService.GetUserByUsernameAsync(username, ct);

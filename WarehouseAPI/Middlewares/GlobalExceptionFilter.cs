@@ -1,27 +1,44 @@
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.WebUtilities; 
+using Microsoft.Data.SqlClient; 
 using WarehouseServices.Exceptions;
 
 namespace WarehouseAPI.Filters;
 
-public class GlobalExceptionHandler(IProblemDetailsService problemDetailsService) : IExceptionHandler
+public class GlobalExceptionHandler(IProblemDetailsService problemDetailsService,
+    ILogger<GlobalExceptionHandler> logger) : IExceptionHandler
 {
     public async ValueTask<bool> TryHandleAsync(
         HttpContext httpContext,
         Exception exception,
         CancellationToken cancellationToken)
     {
-        httpContext.Response.StatusCode = exception switch
+        int statusCode = exception switch
         {
             NotFoundException => StatusCodes.Status404NotFound,
             ConflictException => StatusCodes.Status409Conflict,
-            InternalServerErrorException => StatusCodes.Status500InternalServerError,
+            SqlException => StatusCodes.Status500InternalServerError, 
             _ => StatusCodes.Status500InternalServerError
         };
 
-        string errorMessage = 
-            (httpContext.Response.StatusCode == StatusCodes.Status500InternalServerError)
-            ? "Failed to perform the operation" : exception.Message;
+        httpContext.Response.StatusCode = statusCode;
+
+        if (statusCode >= 500)
+        {
+            logger.LogError(exception, "A critical server or database error occurred: {Message}", exception.Message);
+        }
+        else
+        {
+            logger.LogWarning("A client error occurred: {Message}", exception.Message);
+        }
+
+        string errorMessage = exception switch
+        {
+            SqlException => "A database error occurred while processing your request. Please try again later.", 
+            _ when statusCode >= 500 => "An unexpected server error occurred.",
+            _ => exception.Message
+        };
 
         return await problemDetailsService.TryWriteAsync(new ProblemDetailsContext()
         {
@@ -30,10 +47,11 @@ public class GlobalExceptionHandler(IProblemDetailsService problemDetailsService
             ProblemDetails = new ProblemDetails()
             {
                 Type = exception.GetType().Name,
-                Title = "Error has occurred",
-                Detail = errorMessage
+                Title = ReasonPhrases.GetReasonPhrase(statusCode),
+                Status = statusCode,
+                Detail = errorMessage,
+                Instance = httpContext.Request.Path
             }
         });
     }
 }
-
