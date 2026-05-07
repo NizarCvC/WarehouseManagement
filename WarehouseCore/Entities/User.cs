@@ -11,4 +11,6 @@ public class User
     public DateTime CreatedAt { get; init; }
     public int RoleID { get; init; }
     public required Role Role { get; init; }
+    public string? RefreshToken { get; init; }
+    public DateTime? RefreshTokenExpiryTime { get; init; }
 }

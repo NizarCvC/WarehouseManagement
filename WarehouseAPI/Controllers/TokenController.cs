@@ -13,4 +13,10 @@ public class TokenController(IAuthService authService) : ControllerBase
     {
         return Ok(await authService.LoginAsync(loginDto, ct));
     }
+
+    [HttpPost("refresh")]
+    public async Task<IActionResult> RefreshToken(RefreshTokenRequestDto refreshToken, CancellationToken ct)
+    {
+        return Ok(await authService.RefreshTokenAsync(refreshToken, ct));
+    }
 }

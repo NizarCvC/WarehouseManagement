@@ -1,7 +1,8 @@
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.WebUtilities; 
-using Microsoft.Data.SqlClient; 
+using Microsoft.Data.SqlClient;
+using Microsoft.IdentityModel.Tokens;
 using WarehouseServices.Exceptions;
 
 namespace WarehouseAPI.Services;
@@ -19,6 +20,7 @@ public class GlobalExceptionHandler(IProblemDetailsService problemDetailsService
             NotFoundException => StatusCodes.Status404NotFound,
             ConflictException => StatusCodes.Status409Conflict,
             UnauthorizedException => StatusCodes.Status401Unauthorized,
+            SecurityTokenException => StatusCodes.Status401Unauthorized,
             SqlException => StatusCodes.Status500InternalServerError, 
             _ => StatusCodes.Status500InternalServerError
         };

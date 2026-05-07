@@ -16,9 +16,11 @@ public class UserRepository : IUserRepository
 
     public async Task<User?> GetUserByIdAsync(int userId, CancellationToken ct)
     {
-        string query = @"SELECT u.UserID, u.Name, u.Username, u.Email, u.PasswordHash, u.IsActive, u.CreatedAt, u.RoleID, r.Name AS RoleName FROM Users u
-                            INNER JOIN Roles r ON u.RoleID = r.RoleID
-                            WHERE UserID = @UserID";
+        string query = @"SELECT u.UserID, u.Name, u.Username, u.Email, u.PasswordHash, u.IsActive,
+                        u.CreatedAt, u.RoleID, r.Name AS RoleName, u.RefreshToken, u.RefreshTokenExpiryTime
+                        FROM Users u
+                        INNER JOIN Roles r ON u.RoleID = r.RoleID
+                        WHERE UserID = @UserID";
 
         using (SqlConnection connection = new SqlConnection(_connectionString))
         using (SqlCommand command = new SqlCommand(query, connection))
@@ -38,9 +40,11 @@ public class UserRepository : IUserRepository
 
     public async Task<User?> GetByUsernameAsync(string username, CancellationToken ct)
     {
-        string query = @"SELECT u.UserID, u.Name, u.Username, u.Email, u.PasswordHash, u.IsActive, u.CreatedAt, u.RoleID, r.Name AS RoleName FROM Users u
-                            INNER JOIN Roles r ON u.RoleID = r.RoleID
-                            WHERE Username = @Username";
+        string query = @"SELECT u.UserID, u.Name, u.Username, u.Email, u.PasswordHash, u.IsActive, 
+                        u.CreatedAt, u.RoleID, r.Name AS RoleName, u.RefreshToken, u.RefreshTokenExpiryTime
+                        FROM Users u
+                        INNER JOIN Roles r ON u.RoleID = r.RoleID
+                        WHERE Username = @Username";
 
         using (SqlConnection connection = new SqlConnection(_connectionString))
         using (SqlCommand command = new SqlCommand(query, connection))
@@ -61,10 +65,9 @@ public class UserRepository : IUserRepository
     public async Task<List<User>> GetAllUsersAsync(CancellationToken ct, int page = 1, int pageSize = 10)
     {
         List<User> users = new List<User>();
-        string query = @"SELECT u.UserID, u.Name, u.Username, u.Email, u.PasswordHash,
-                            u.IsActive, u.CreatedAt, u.RoleID, r.Name AS RoleName
-                            FROM Users u
-                            INNER JOIN Roles r ON u.RoleID = r.RoleID
+        string query = @"SELECT u.UserID, u.Name, u.Username, u.Email, u.PasswordHash, u.IsActive,
+                            u.CreatedAt, u.RoleID, r.Name AS RoleName, u.RefreshToken, u.RefreshTokenExpiryTime
+                            FROM Users u INNER JOIN Roles r ON u.RoleID = r.RoleID
                             ORDER BY UserID
                             OFFSET (@PageNumber - 1) * @RowsPerPage ROWS
                             FETCH NEXT @RowsPerPage ROWS ONLY;";
@@ -206,6 +209,27 @@ public class UserRepository : IUserRepository
         }
     }
 
+    public async Task<bool> UpdateRefreshTokenAsync(int userId, string? refreshToken, DateTime? expiryTime, CancellationToken ct)
+    {
+        string query = @"UPDATE Users 
+                        SET RefreshToken = @RefreshToken, 
+                        RefreshTokenExpiryTime = @ExpiryTime 
+                        WHERE UserID = @UserID";
+
+        using (SqlConnection connection = new SqlConnection(_connectionString))
+        using (SqlCommand command = new SqlCommand(query, connection))
+        {
+            command.Parameters.AddWithValue("@UserID", userId);
+            command.Parameters.AddWithValue("@RefreshToken", (object?)refreshToken ?? DBNull.Value);
+            command.Parameters.AddWithValue("@ExpiryTime", (object?)expiryTime ?? DBNull.Value);
+
+            connection.Open();
+
+            int rowsAffected = await command.ExecuteNonQueryAsync(ct);
+            return rowsAffected > 0;
+        }
+    }
+
     private User MapReaderToUser(SqlDataReader reader)
     {
         return new User()
@@ -222,7 +246,14 @@ public class UserRepository : IUserRepository
             {
                 RoleID = reader.GetInt32(reader.GetOrdinal("RoleID")),
                 Name = reader.GetString(reader.GetOrdinal("RoleName"))
-            }
+            },
+            RefreshToken = reader.IsDBNull(reader.GetOrdinal("RefreshToken"))
+                ? null
+                : reader.GetString(reader.GetOrdinal("RefreshToken")),
+            RefreshTokenExpiryTime = reader.IsDBNull(reader.GetOrdinal("RefreshTokenExpiryTime"))
+                ? null
+                : reader.GetDateTime(reader.GetOrdinal("RefreshTokenExpiryTime"))
+            
         };
     }
 }
