@@ -1,5 +1,6 @@
 using Asp.Versioning;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using WarehouseCore.DTOs.AuthDTOs;
 using WarehouseServices.Interfaces;
 
@@ -21,6 +22,7 @@ public class TokenController(IAuthService authService) : ControllerBase
     [EndpointName("GenerateTokenV1")]
     [EndpointSummary("Generate access and refresh tokens")]
     [EndpointDescription("Authenticates a user using their credentials and returns a pair of JWT access and refresh tokens.")]
+    [EnableRateLimiting(policyName: "LoginPolicy")]
     public async Task<IActionResult> GenerateToken([FromBody] LoginDto loginDto, CancellationToken ct)
     {
         var result = await authService.LoginAsync(loginDto, ct);
@@ -36,6 +38,7 @@ public class TokenController(IAuthService authService) : ControllerBase
     [EndpointName("RefreshTokenV1")]
     [EndpointSummary("Refresh an expired access token")]
     [EndpointDescription("Takes an expired access token and a valid refresh token to issue a new pair of access and refresh tokens.")]
+    [EnableRateLimiting(policyName: "RefreshPolicy")]
     public async Task<IActionResult> RefreshToken([FromBody] RefreshTokenRequestDto refreshToken, CancellationToken ct)
     {
         var result = await authService.RefreshTokenAsync(refreshToken, ct);

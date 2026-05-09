@@ -1,6 +1,8 @@
 using System.Text;
+using System.Threading.RateLimiting;
 using Asp.Versioning;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.IdentityModel.Tokens;
 using WarehouseAPI.Services;
 using WarehouseDataAccess.Interfaces;
@@ -18,28 +20,12 @@ public static class DependencyInjection
         services.AddWarehouseServices();
         services.AddApiDocumentation();
         services.AddJwtAuthentication(configuration);
-        services.AddAuthorization(options =>
-        {
-            options.AddPolicy("System Administrator", policy => policy.RequireRole("System Administrator"));
-            options.AddPolicy("Warehouse Manager", policy => policy.RequireRole("Warehouse Manager"));
-            options.AddPolicy("Sales Representative", policy => policy.RequireRole("Sales Representative"));
-            options.AddPolicy("Purchasing Officer", policy => policy.RequireRole("Purchasing Officer"));
-            options.AddPolicy("Accountant", policy => policy.RequireRole("Accountant"));
-        });
-        services.AddProblemDetails(options =>
-            options.CustomizeProblemDetails = (context) =>
-            {
-                context.ProblemDetails.Instance = $"{context.HttpContext.Request.Method} {context.HttpContext.Request.Path}";
-            }
-        );
+        services.AddJwtAuthorization();
+        services.AddProblemDetailsServices();
         services.AddExceptionHandler<GlobalExceptionHandler>();
-        services.AddApiVersioning(options =>
-        {
-            options.DefaultApiVersion = new ApiVersion(1, 0);
-            options.AssumeDefaultVersionWhenUnspecified = true;
-            options.ReportApiVersions = true;
-            options.ApiVersionReader = new HeaderApiVersionReader("api-version");
-        });
+        services.AddRateLimiting();
+        services.AddApiVersioningServices();
+        services.AddMemoryCache(options => options.SizeLimit = 100);
 
         return services;
     }
@@ -53,7 +39,7 @@ public static class DependencyInjection
         return services;
     }
 
-    private static IServiceCollection AddJwtAuthentication(this IServiceCollection services, IConfiguration configuration) 
+    private static IServiceCollection AddJwtAuthentication(this IServiceCollection services, IConfiguration configuration)
     {
         services.AddAuthentication(options =>
         {
@@ -79,6 +65,20 @@ public static class DependencyInjection
         return services;
     }
 
+    private static IServiceCollection AddJwtAuthorization(this IServiceCollection services)
+    {
+        services.AddAuthorization(options =>
+        {
+            options.AddPolicy("System Administrator", policy => policy.RequireRole("System Administrator"));
+            options.AddPolicy("Warehouse Manager", policy => policy.RequireRole("Warehouse Manager"));
+            options.AddPolicy("Sales Representative", policy => policy.RequireRole("Sales Representative"));
+            options.AddPolicy("Purchasing Officer", policy => policy.RequireRole("Purchasing Officer"));
+            options.AddPolicy("Accountant", policy => policy.RequireRole("Accountant"));
+        });
+
+        return services;
+    }
+
     private static IServiceCollection AddApiDocumentation(this IServiceCollection services)
     {
         string[] versions = ["v1"];
@@ -96,4 +96,88 @@ public static class DependencyInjection
         return services;
     }
 
+    private static IServiceCollection AddProblemDetailsServices(this IServiceCollection services)
+    {
+        services.AddProblemDetails(options =>
+            options.CustomizeProblemDetails = (context) =>
+            {
+                context.ProblemDetails.Instance = $"{context.HttpContext.Request.Method} {context.HttpContext.Request.Path}";
+            }
+        );
+
+        return services;
+    }
+
+    private static IServiceCollection AddRateLimiting(this IServiceCollection services)
+    {
+        services.AddRateLimiter(options =>
+        {
+            options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
+
+            options.AddPolicy("GeneralPolicy", context =>
+            {
+                var ipAddress = context.Connection.RemoteIpAddress?.ToString() ?? "unknown_ip";
+                return RateLimitPartition.GetSlidingWindowLimiter(
+                    partitionKey: ipAddress,
+                    factory: partition => new SlidingWindowRateLimiterOptions
+                    {
+                        PermitLimit = 100,          
+                        Window = TimeSpan.FromMinutes(1), 
+                        SegmentsPerWindow = 4,      
+                        QueueLimit = 2,             
+                        QueueProcessingOrder = QueueProcessingOrder.OldestFirst
+                    });
+            });
+
+            options.AddPolicy("LoginPolicy", context =>
+            {
+                var ipAddress = context.Connection.RemoteIpAddress?.ToString() ?? "unknown_ip";
+
+                return RateLimitPartition.GetFixedWindowLimiter(
+                    partitionKey: ipAddress,
+                    factory: partition => new FixedWindowRateLimiterOptions
+                    {
+                        AutoReplenishment = true,
+                        PermitLimit = 5,
+                        Window = TimeSpan.FromMinutes(1)
+                    });
+            });
+
+            options.AddPolicy("RefreshPolicy", context =>
+            {
+                var partitionKey = context.User.Identity?.IsAuthenticated == true
+                    ? context.User.Claims.FirstOrDefault(c => c.Type == "sub")?.Value ?? "unknown_user"
+                    : context.Connection.RemoteIpAddress?.ToString() ?? "unknown_ip";
+
+                return RateLimitPartition.GetTokenBucketLimiter(
+                    partitionKey: partitionKey,
+                    factory: partition => new TokenBucketRateLimiterOptions
+                    {
+                        TokenLimit = 10,
+                        ReplenishmentPeriod = TimeSpan.FromMinutes(1),
+                        TokensPerPeriod = 5,
+                        AutoReplenishment = true
+                    });
+            });
+        });
+
+        return services;
+    }
+
+    private static IServiceCollection AddApiVersioningServices(this IServiceCollection services)
+    {
+        services.AddApiVersioning(options =>
+        {
+            options.DefaultApiVersion = new ApiVersion(1, 0);
+            options.AssumeDefaultVersionWhenUnspecified = true;
+            options.ReportApiVersions = true;
+            options.ApiVersionReader = new HeaderApiVersionReader("api-version");
+        }).AddApiExplorer(options =>
+        {
+            options.GroupNameFormat = "'v'VVV";
+            options.SubstituteApiVersionInUrl = false;
+        });
+
+        return services;
+    }
 }

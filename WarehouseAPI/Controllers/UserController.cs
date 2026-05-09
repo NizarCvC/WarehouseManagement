@@ -2,6 +2,7 @@ using Asp.Versioning;
 using M02.BuildingRESTFulAPI.Responses;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using WarehouseCore.DTOs.CreateDTOs;
 using WarehouseCore.DTOs.ReadDTOs;
 using WarehouseServices.Interfaces;
@@ -14,9 +15,11 @@ namespace WarehouseAPI.Controllers;
 [Authorize(Policy = "System Administrator")]
 [Tags("Users")]
 [Produces("application/json")]
+[EnableRateLimiting(policyName: "GeneralPolicy")]
 public class UserController(IUserService userService) : ControllerBase
 {
     [HttpOptions]
+    [DisableRateLimiting]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType<ProblemDetails>(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType<ProblemDetails>(StatusCodes.Status403Forbidden)]

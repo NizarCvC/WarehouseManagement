@@ -5,6 +5,7 @@ using WarehouseDataAccess.Interfaces;
 using WarehouseServices.Exceptions;
 using WarehouseServices.Interfaces;
 using WarehouseServices.Security;
+
 namespace WarehouseServices.Services;
 
 public class UserServices(IUserRepository userRepository) : IUserService
