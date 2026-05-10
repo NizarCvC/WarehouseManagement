@@ -1,15 +1,59 @@
 services:
+  warehousesqlserver:
+    image: mcr.microsoft.com/mssql/server:2025-latest
+    platform: linux/amd64
+    container_name: warehousesqlserver
+    ports:
+      - "1434:1433"
+    environment:
+      - ACCEPT_EULA=Y
+      - SA_PASSWORD=${DB_SA_PASSWORD}
+    volumes:
+      - sql_data:/var/opt/mssql 
+    healthcheck:
+      test: ["CMD-SHELL", "/opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P ${DB_SA_PASSWORD} -C -Q 'SELECT 1' || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 15s
+
+  warehouseapi.seq:
+    image: datalust/seq:latest
+    container_name: seq_logger
+    restart: unless-stopped
+    environment:
+      - ACCEPT_EULA=Y
+      - SEQ_FIRSTRUN_ADMINPASSWORD=${SEQ_PASSWORD}
+    ports:
+      - "5342:80"
+    volumes:
+      - seq_data:/data
+
   warehouseapi:
     image: ${DOCKER_REGISTRY-}warehouseapi
+    container_name: warehouseapi
     build:
       context: .
       dockerfile: WarehouseAPI/Dockerfile
     ports:
-      - "8080:8080"
       - "8081:8081"
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
-      - ASPNETCORE_HTTP_PORTS=8080
       - ASPNETCORE_HTTPS_PORTS=8081
       - ConnectionStrings__DefaultConnection=${DB_CONNECTION}
       - Jwt__Key=${JWT_KEY}
+      - ASPNETCORE_Kestrel__Certificates__Default__Password=${Certificates_Password}
+      - ASPNETCORE_Kestrel__Certificates__Default__Path=/https/warehouseapi.pfx
+      - OTEL_EXPORTER_OTLP_ENDPOINT=http://warehouseapi.seq:5342/ingest/otlp/v1/traces 
+      - OTEL_EXPORTER_OTLP_PROTOCOL=http/protobuf
+    volumes:
+      - ${HOME}/.aspnet/https:/https:ro
+    depends_on:
+      warehousesqlserver:
+        condition: service_healthy
+      warehouseapi.seq: 
+        condition: service_started
+
+volumes:
+  sql_data:
+  seq_data:

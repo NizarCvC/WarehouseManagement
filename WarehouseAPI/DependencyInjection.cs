@@ -4,6 +4,8 @@ using Asp.Versioning;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.IdentityModel.Tokens;
+using OpenTelemetry.Resources;
+using OpenTelemetry.Trace;
 using WarehouseAPI.Services;
 using WarehouseDataAccess.Interfaces;
 using WarehouseDataAccess.Repositories;
@@ -24,6 +26,7 @@ public static class DependencyInjection
         services.AddProblemDetailsServices();
         services.AddExceptionHandler<GlobalExceptionHandler>();
         services.AddRateLimiting();
+        services.AddTracing(configuration);
         services.AddApiVersioningServices();
         services.AddMemoryCache(options => options.SizeLimit = 100);
 
@@ -121,10 +124,10 @@ public static class DependencyInjection
                     partitionKey: ipAddress,
                     factory: partition => new SlidingWindowRateLimiterOptions
                     {
-                        PermitLimit = 100,          
-                        Window = TimeSpan.FromMinutes(1), 
-                        SegmentsPerWindow = 4,      
-                        QueueLimit = 2,             
+                        PermitLimit = 100,
+                        Window = TimeSpan.FromMinutes(1),
+                        SegmentsPerWindow = 4,
+                        QueueLimit = 2,
                         QueueProcessingOrder = QueueProcessingOrder.OldestFirst
                     });
             });
@@ -159,6 +162,20 @@ public static class DependencyInjection
                         AutoReplenishment = true
                     });
             });
+        });
+
+        return services;
+    }
+
+    private static IServiceCollection AddTracing(this IServiceCollection services, IConfiguration configuration)
+    {
+        services.AddOpenTelemetry()
+        .ConfigureResource(res => res.AddService(configuration["warehouseapi"] ?? "warehouseapi"))
+        .WithTracing(tracing =>
+        {
+            tracing.AddAspNetCoreInstrumentation().
+            AddHttpClientInstrumentation();
+            tracing.AddOtlpExporter();
         });
 
         return services;

@@ -129,7 +129,7 @@ public class UserController(IUserService userService) : ControllerBase
         int newUserId = await userService.AddNewUserAsync(userDto, ct);
 
         return CreatedAtRoute(routeName: nameof(GetUserById),
-            routeValues: new { UserId = newUserId }, value: userDto);
+            routeValues: new { UserId = newUserId }, value: new { UserId = newUserId });
     }
 
     [HttpPut("{userId:int}")]
@@ -156,12 +156,12 @@ public class UserController(IUserService userService) : ControllerBase
     [ProducesResponseType<ProblemDetails>(StatusCodes.Status403Forbidden)]
     [ProducesResponseType<ProblemDetails>(StatusCodes.Status404NotFound)]
     [ProducesResponseType<ProblemDetails>(StatusCodes.Status500InternalServerError)]
-    [EndpointName("DeleteUserV1")]
-    [EndpointSummary("Delete user by id")]
+    [EndpointName("DeactivateUserV1")]
+    [EndpointSummary("Deactivate user by id")]
     [EndpointDescription("Deactivate the user in the system.")]
-    public async Task<IActionResult> DeleteUser(int userId, CancellationToken ct)
+    public async Task<IActionResult> DeactivateUser(int userId, CancellationToken ct)
     {
-        await userService.DeleteUserAsync(userId, ct);
+        await userService.DeactivateUserAsync(userId, ct);
         return NoContent();
     }
 

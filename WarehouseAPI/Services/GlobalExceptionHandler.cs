@@ -29,7 +29,7 @@ public class GlobalExceptionHandler(IProblemDetailsService problemDetailsService
 
         if (statusCode >= 500)
         {
-            logger.LogError(exception, "A critical server or database error occurred: {Message}", exception.Message);
+            logger.LogCritical(exception, "A critical server or database error occurred: {Message}", exception.Message);
         }
         else
         {

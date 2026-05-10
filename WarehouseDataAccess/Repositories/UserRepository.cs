@@ -68,6 +68,7 @@ public class UserRepository : IUserRepository
         string query = @"SELECT u.UserID, u.Name, u.Username, u.Email, u.PasswordHash, u.IsActive,
                             u.CreatedAt, u.RoleID, r.Name AS RoleName, u.RefreshToken, u.RefreshTokenExpiryTime
                             FROM Users u INNER JOIN Roles r ON u.RoleID = r.RoleID
+                            WHERE u.IsActive = 1
                             ORDER BY UserID
                             OFFSET (@PageNumber - 1) * @RowsPerPage ROWS
                             FETCH NEXT @RowsPerPage ROWS ONLY;";
@@ -163,7 +164,7 @@ public class UserRepository : IUserRepository
         }
     }
 
-    public async Task<bool> DeleteUserAsync(int userId, CancellationToken ct)
+    public async Task<bool> DeactivateUserAsync(int userId, CancellationToken ct)
     {
         string query = @"UPDATE Users SET IsActive = 0 WHERE UserID = @UserID";
 

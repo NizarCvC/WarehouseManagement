@@ -11,7 +11,7 @@ public interface IUserService
     Task<int> GetUsersCountAsync(CancellationToken ct);
     Task<int> AddNewUserAsync(CreateUserDto userDto, CancellationToken ct);
     Task<bool> UpdateUserAsync(int userId, CreateUserDto userDto, CancellationToken ct);
-    Task<bool> DeleteUserAsync(int userId, CancellationToken ct);
+    Task<bool> DeactivateUserAsync(int userId, CancellationToken ct);
     Task<bool> IsUserIdExists(int userId, CancellationToken ct);
     Task<bool> IsUsernameExists(string username, CancellationToken ct);
 }

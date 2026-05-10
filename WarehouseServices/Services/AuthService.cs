@@ -19,7 +19,7 @@ public class AuthService(IConfiguration configuration, IUserRepository userRepos
     {
         var userInfo = await userRepository.GetByUsernameAsync(loginDto.Username, ct);
 
-        if (userInfo is null || !Hashing.VerifyPassword(loginDto.Password, userInfo.PasswordHash))
+        if (userInfo is null || !userInfo.IsActive || !Hashing.VerifyPassword(loginDto.Password, userInfo.PasswordHash))
             throw new UnauthorizedException("Invalid username or password");
 
         return await GenerateTokensAndSaveAsync(userInfo, ct);

@@ -80,9 +80,9 @@ public class UserServices(IUserRepository userRepository) : IUserService
         return isSuccess ? true : throw new InternalServerErrorException("Failed to update the user.");
     }
 
-    public async Task<bool> DeleteUserAsync(int userId, CancellationToken ct)
+    public async Task<bool> DeactivateUserAsync(int userId, CancellationToken ct)
     {
-        bool isSuccess = await userRepository.DeleteUserAsync(userId, ct);
+        bool isSuccess = await userRepository.DeactivateUserAsync(userId, ct);
         return isSuccess ? true : throw new NotFoundException($"The user with ID: {userId} not exists.");
     }
 
