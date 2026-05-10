@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using WarehouseCore.enums;
 
 namespace WarehouseCore.DTOs.CreateDTOs;
 
@@ -19,5 +20,5 @@ public class CreateUserDto
     public required string Password { get; set; }
     [Required(ErrorMessage = "The role id is required")]
     [Range(1, 5, ErrorMessage = "The role id is not valid")]
-    public int RoleID { get; set; }
+    public enRole RoleID { get; set; }
 }

@@ -10,9 +10,7 @@ namespace WarehouseAPI.Services;
 public class GlobalExceptionHandler(IProblemDetailsService problemDetailsService,
     ILogger<GlobalExceptionHandler> logger) : IExceptionHandler
 {
-    public async ValueTask<bool> TryHandleAsync(
-        HttpContext httpContext,
-        Exception exception,
+    public async ValueTask<bool> TryHandleAsync(HttpContext httpContext, Exception exception,
         CancellationToken cancellationToken)
     {
         int statusCode = exception switch
@@ -28,13 +26,10 @@ public class GlobalExceptionHandler(IProblemDetailsService problemDetailsService
         httpContext.Response.StatusCode = statusCode;
 
         if (statusCode >= 500)
-        {
-            logger.LogCritical(exception, "A critical server or database error occurred: {Message}", exception.Message);
-        }
+            logger.LogError(exception, "A critical server or database error occurred: {Message}", exception.Message);
+        
         else
-        {
-            logger.LogWarning("A client error occurred: {Message}", exception.Message);
-        }
+            logger.LogWarning("A client error occurred at {Path}: {Message}", httpContext.Request.Path, exception.Message);
 
         string errorMessage = exception switch
         {

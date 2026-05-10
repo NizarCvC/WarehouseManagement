@@ -1,3 +1,4 @@
+using Microsoft.Extensions.Logging;
 using WarehouseCore.DTOs.CreateDTOs;
 using WarehouseCore.DTOs.ReadDTOs;
 using WarehouseCore.Entities;
@@ -8,7 +9,7 @@ using WarehouseServices.Security;
 
 namespace WarehouseServices.Services;
 
-public class UserServices(IUserRepository userRepository) : IUserService
+public class UserServices(IUserRepository userRepository, ILogger<UserServices> logger) : IUserService
 {
     public async Task<UserDto?> GetUserByIdAsync(int userId, CancellationToken ct)
     {
@@ -17,6 +18,7 @@ public class UserServices(IUserRepository userRepository) : IUserService
         if (userInfo is null)
             throw new NotFoundException($"The user ID: {userId} not exists.");
 
+        logger.LogInformation("The user id '{UserId}' is retrieved", userId);
         return UserDto.FromEntity(userInfo);
     }
 
@@ -27,18 +29,22 @@ public class UserServices(IUserRepository userRepository) : IUserService
         if (userInfo is null)
             throw new NotFoundException($"The user by username '{username}' not exists.");
 
+        logger.LogInformation("The user with username '{Username}' is retrieved", username);
         return UserDto.FromEntity(userInfo);
     }
 
     public async Task<List<UserDto>> GetAllUsersAsync(CancellationToken ct, int page = 1, int pageSize = 10)
     {
         List<User> users = await userRepository.GetAllUsersAsync(ct, page, pageSize);
+        logger.LogInformation("The users retrieved in page {Page} with page size {PageSize}", page, pageSize);
         return UserDto.FromEntities(users);
     }
 
     public async Task<int> GetUsersCountAsync(CancellationToken ct)
     {
-        return await userRepository.GetUsersCountAsync(ct);
+        int count = await userRepository.GetUsersCountAsync(ct);
+        logger.LogInformation("The users count retrieved");
+        return count;
     }
 
     public async Task<int> AddNewUserAsync(CreateUserDto userDto, CancellationToken ct)
@@ -50,8 +56,12 @@ public class UserServices(IUserRepository userRepository) : IUserService
         int newId = await userRepository.AddNewUserAsync(userDto, ct);
 
         if (newId == -1)
+        {
+            logger.LogError("Failed to add the user with username '{Username}' in the system.", userDto.Username);
             throw new InternalServerErrorException("Failed to add the user.");
+        }
 
+        logger.LogInformation("A new user with username '{Username}' was added successfully with ID {UserId}", userDto.Username, newId);
         return newId;
     }
 
@@ -65,6 +75,7 @@ public class UserServices(IUserRepository userRepository) : IUserService
         if (userInfo.Username != userDto.Username)
         {
             bool isUsernameUsed = await userRepository.IsUsernameExists(userDto.Username, ct);
+
             if (isUsernameUsed)
                 throw new ConflictException($"The username: {userDto.Username} is already used.");
         }
@@ -77,22 +88,48 @@ public class UserServices(IUserRepository userRepository) : IUserService
 
         bool isSuccess = await userRepository.UpdateUserAsync(userId, userDto, ct);
 
-        return isSuccess ? true : throw new InternalServerErrorException("Failed to update the user.");
+        if (!isSuccess)
+        {
+            logger.LogError("Failed to update the user with ID '{UserId}' and username '{Username}'.", userId, userDto.Username);
+            throw new InternalServerErrorException("Failed to update the user.");
+        }
+
+        logger.LogInformation("The user with ID '{UserId}' was updated successfully", userId);
+        return isSuccess;
     }
 
     public async Task<bool> DeactivateUserAsync(int userId, CancellationToken ct)
     {
         bool isSuccess = await userRepository.DeactivateUserAsync(userId, ct);
-        return isSuccess ? true : throw new NotFoundException($"The user with ID: {userId} not exists.");
+
+        if (!isSuccess)
+            throw new NotFoundException($"The user with ID: {userId} not exists.");
+
+        logger.LogInformation("The user with ID '{UserId}' was deactivated", userId);
+        return isSuccess;
     }
 
     public async Task<bool> IsUserIdExists(int userId, CancellationToken ct)
     {
-        return await userRepository.IsUserIdExists(userId, ct);
+        bool isFound = await userRepository.IsUserIdExists(userId, ct);
+
+        if (isFound)
+            logger.LogDebug("The user with id '{UserId}' is found.", userId);
+        else
+            logger.LogDebug("The user with id '{UserId}' is not found.", userId);
+
+        return isFound;
     }
 
     public async Task<bool> IsUsernameExists(string username, CancellationToken ct)
     {
-        return await userRepository.IsUsernameExists(username, ct);
+        bool isFound = await userRepository.IsUsernameExists(username, ct);
+
+        if (isFound)
+            logger.LogDebug("The user with username '{Username}' is found.", username);
+        else
+            logger.LogDebug("The user with username '{Username}' is not found.", username);
+
+        return isFound;
     }
 }
