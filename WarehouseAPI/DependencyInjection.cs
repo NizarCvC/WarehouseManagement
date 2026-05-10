@@ -2,11 +2,11 @@ using System.Text;
 using System.Threading.RateLimiting;
 using Asp.Versioning;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.IdentityModel.Tokens;
 using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
 using WarehouseAPI.Services;
+using WarehouseCore.enums;
 using WarehouseDataAccess.Interfaces;
 using WarehouseDataAccess.Repositories;
 using WarehouseServices.Interfaces;
@@ -72,11 +72,11 @@ public static class DependencyInjection
     {
         services.AddAuthorization(options =>
         {
-            options.AddPolicy("System Administrator", policy => policy.RequireRole("System Administrator"));
-            options.AddPolicy("Warehouse Manager", policy => policy.RequireRole("Warehouse Manager"));
-            options.AddPolicy("Sales Representative", policy => policy.RequireRole("Sales Representative"));
-            options.AddPolicy("Purchasing Officer", policy => policy.RequireRole("Purchasing Officer"));
-            options.AddPolicy("Accountant", policy => policy.RequireRole("Accountant"));
+            options.AddPolicy(enRole.SystemAdministrator.ToRoleName(), policy => policy.RequireRole(enRole.SystemAdministrator.ToRoleName()));
+            options.AddPolicy(enRole.WarehouseManager.ToRoleName(), policy => policy.RequireRole(enRole.WarehouseManager.ToRoleName()));
+            options.AddPolicy(enRole.SalesRepresentative.ToRoleName(), policy => policy.RequireRole(enRole.SalesRepresentative.ToRoleName()));
+            options.AddPolicy(enRole.PurchasingOfficer.ToRoleName(), policy => policy.RequireRole(enRole.PurchasingOfficer.ToRoleName()));
+            options.AddPolicy(enRole.Accountant.ToRoleName(), policy => policy.RequireRole(enRole.Accountant.ToRoleName()));
         });
 
         return services;

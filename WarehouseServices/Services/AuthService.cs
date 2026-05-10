@@ -6,6 +6,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
 using WarehouseCore.DTOs.AuthDTOs;
 using WarehouseCore.Entities;
+using WarehouseCore.enums;
 using WarehouseDataAccess.Interfaces;
 using WarehouseServices.Exceptions;
 using WarehouseServices.Interfaces;
@@ -58,7 +59,7 @@ public class AuthService(IConfiguration configuration, IUserRepository userRepos
             new Claim(ClaimTypes.NameIdentifier, user.UserID.ToString()),
             new Claim(ClaimTypes.Name, user.Username),
             new Claim(ClaimTypes.Email, user.Email),
-            new Claim(ClaimTypes.Role, user.Role?.Name ?? "User"),
+            new Claim(ClaimTypes.Role, user.Role.ToRoleName() ?? "User"),
             new Claim("full_name", user.Name)
         };
 

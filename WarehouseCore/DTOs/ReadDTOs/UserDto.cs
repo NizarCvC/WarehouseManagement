@@ -1,4 +1,5 @@
 using WarehouseCore.Entities;
+using WarehouseCore.enums;
 
 namespace WarehouseCore.DTOs.ReadDTOs;
 
@@ -12,10 +13,10 @@ public class UserDto
     public required string RoleName { get; set; } 
     public DateTime CreatedAt { get; set; }
 
-    public static UserDto FromModel(User user)
+    public static UserDto FromEntity(User user)
     {
         if (user == null)
-            throw new ArgumentNullException(nameof(user), "Cannot create a dto from a null user");
+            throw new ArgumentNullException(nameof(user), "Cannot create a DTO from a null user");
 
         UserDto dto = new UserDto()
         {
@@ -24,18 +25,18 @@ public class UserDto
             Username = user.Username,
             Email = user.Email,
             IsActive = user.IsActive,
-            RoleName = user.Role.Name,
+            RoleName = user.Role.ToRoleName(),
             CreatedAt = user.CreatedAt
         };
 
         return dto;
     }
 
-    public static List<UserDto> FromModels(List<User> users)
+    public static List<UserDto> FromEntities(List<User> users)
     {
         if (users == null)
-            throw new ArgumentNullException(nameof(users), "Cannot create dtos from a null collection");
+            throw new ArgumentNullException(nameof(users), "Cannot create DTOs from a null collection");
 
-        return users.Select(FromModel).ToList();
+        return users.Select(FromEntity).ToList();
     }
 }

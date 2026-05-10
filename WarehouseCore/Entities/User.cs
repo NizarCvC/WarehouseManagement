@@ -1,3 +1,5 @@
+using WarehouseCore.enums;
+
 namespace WarehouseCore.Entities;
 
 public class User
@@ -9,8 +11,7 @@ public class User
     public required string PasswordHash { get; init; }
     public bool IsActive { get; init; }
     public DateTime CreatedAt { get; init; }
-    public int RoleID { get; init; }
-    public required Role Role { get; init; }
+    public required enRole Role { get; init; }
     public string? RefreshToken { get; init; }
     public DateTime? RefreshTokenExpiryTime { get; init; }
 }

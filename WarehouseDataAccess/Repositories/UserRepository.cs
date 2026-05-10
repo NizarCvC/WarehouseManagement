@@ -2,6 +2,7 @@ using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Configuration;
 using WarehouseCore.DTOs.CreateDTOs;
 using WarehouseCore.Entities;
+using WarehouseCore.enums;
 using WarehouseDataAccess.Interfaces;
 namespace WarehouseDataAccess.Repositories;
 
@@ -16,11 +17,9 @@ public class UserRepository : IUserRepository
 
     public async Task<User?> GetUserByIdAsync(int userId, CancellationToken ct)
     {
-        string query = @"SELECT u.UserID, u.Name, u.Username, u.Email, u.PasswordHash, u.IsActive,
-                        u.CreatedAt, u.RoleID, r.Name AS RoleName, u.RefreshToken, u.RefreshTokenExpiryTime
-                        FROM Users u
-                        INNER JOIN Roles r ON u.RoleID = r.RoleID
-                        WHERE UserID = @UserID";
+        string query = @"SELECT u.UserID, u.Name, u.Username, u.Email, u.PasswordHash, u.IsActive, u.CreatedAt,
+                        u.RoleID, u.RefreshToken, u.RefreshTokenExpiryTime
+                        FROM Users u WHERE UserID = @UserID";
 
         using (SqlConnection connection = new SqlConnection(_connectionString))
         using (SqlCommand command = new SqlCommand(query, connection))
@@ -40,11 +39,9 @@ public class UserRepository : IUserRepository
 
     public async Task<User?> GetByUsernameAsync(string username, CancellationToken ct)
     {
-        string query = @"SELECT u.UserID, u.Name, u.Username, u.Email, u.PasswordHash, u.IsActive, 
-                        u.CreatedAt, u.RoleID, r.Name AS RoleName, u.RefreshToken, u.RefreshTokenExpiryTime
-                        FROM Users u
-                        INNER JOIN Roles r ON u.RoleID = r.RoleID
-                        WHERE Username = @Username";
+        string query = @"SELECT u.UserID, u.Name, u.Username, u.Email, u.PasswordHash, u.IsActive, u.CreatedAt,
+                        u.RoleID, u.RefreshToken, u.RefreshTokenExpiryTime
+                        FROM Users u WHERE Username = @Username";
 
         using (SqlConnection connection = new SqlConnection(_connectionString))
         using (SqlCommand command = new SqlCommand(query, connection))
@@ -65,9 +62,9 @@ public class UserRepository : IUserRepository
     public async Task<List<User>> GetAllUsersAsync(CancellationToken ct, int page = 1, int pageSize = 10)
     {
         List<User> users = new List<User>();
-        string query = @"SELECT u.UserID, u.Name, u.Username, u.Email, u.PasswordHash, u.IsActive,
-                            u.CreatedAt, u.RoleID, r.Name AS RoleName, u.RefreshToken, u.RefreshTokenExpiryTime
-                            FROM Users u INNER JOIN Roles r ON u.RoleID = r.RoleID
+        string query = @"SELECT u.UserID, u.Name, u.Username, u.Email, u.PasswordHash, u.IsActive, u.CreatedAt, 
+                            u.RoleID, u.RefreshToken, u.RefreshTokenExpiryTime
+                            FROM Users u
                             WHERE u.IsActive = 1
                             ORDER BY UserID
                             OFFSET (@PageNumber - 1) * @RowsPerPage ROWS
@@ -242,19 +239,14 @@ public class UserRepository : IUserRepository
             PasswordHash = reader.GetString(reader.GetOrdinal("PasswordHash")),
             IsActive = reader.GetBoolean(reader.GetOrdinal("IsActive")),
             CreatedAt = reader.GetDateTime(reader.GetOrdinal("CreatedAt")),
-            RoleID = reader.GetInt32(reader.GetOrdinal("RoleID")),
-            Role = new Role()
-            {
-                RoleID = reader.GetInt32(reader.GetOrdinal("RoleID")),
-                Name = reader.GetString(reader.GetOrdinal("RoleName"))
-            },
+            Role = (enRole)reader.GetInt32(reader.GetOrdinal("RoleID")),
             RefreshToken = reader.IsDBNull(reader.GetOrdinal("RefreshToken"))
                 ? null
                 : reader.GetString(reader.GetOrdinal("RefreshToken")),
             RefreshTokenExpiryTime = reader.IsDBNull(reader.GetOrdinal("RefreshTokenExpiryTime"))
                 ? null
                 : reader.GetDateTime(reader.GetOrdinal("RefreshTokenExpiryTime"))
-            
         };
     }
+
 }

@@ -17,7 +17,7 @@ public class UserServices(IUserRepository userRepository) : IUserService
         if (userInfo is null)
             throw new NotFoundException($"The user ID: {userId} not exists.");
 
-        return UserDto.FromModel(userInfo);
+        return UserDto.FromEntity(userInfo);
     }
 
     public async Task<UserDto?> GetUserByUsernameAsync(string username, CancellationToken ct)
@@ -27,13 +27,13 @@ public class UserServices(IUserRepository userRepository) : IUserService
         if (userInfo is null)
             throw new NotFoundException($"The user by username '{username}' not exists.");
 
-        return UserDto.FromModel(userInfo);
+        return UserDto.FromEntity(userInfo);
     }
 
     public async Task<List<UserDto>> GetAllUsersAsync(CancellationToken ct, int page = 1, int pageSize = 10)
     {
         List<User> users = await userRepository.GetAllUsersAsync(ct, page, pageSize);
-        return UserDto.FromModels(users);
+        return UserDto.FromEntities(users);
     }
 
     public async Task<int> GetUsersCountAsync(CancellationToken ct)
