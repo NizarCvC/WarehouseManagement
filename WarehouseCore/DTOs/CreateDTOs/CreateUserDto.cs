@@ -5,20 +5,20 @@ namespace WarehouseCore.DTOs.CreateDTOs;
 
 public class CreateUserDto
 {
-    [Required(ErrorMessage = "The name is required")]
+    [Required(ErrorMessage = "Name is required.")]
     [MaxLength(100)]
     public required string Name { get; set; }
-    [Required(ErrorMessage = "The username is required")]
+    [Required(ErrorMessage = "Username is required.")]
     [MaxLength(100)]
     public required string Username { get; set; }
-    [Required(ErrorMessage = "The email is required")]
-    [EmailAddress(ErrorMessage = "The email is not valid")]
+    [Required(ErrorMessage = "Email is required.")]
+    [EmailAddress(ErrorMessage = "Email is not valid.")]
     [MaxLength(100)]
     public required string Email { get; set; }
-    [Required(ErrorMessage = "The password is required")]
+    [Required(ErrorMessage = "Password is required.")]
     [MaxLength(100)]
     public required string Password { get; set; }
-    [Required(ErrorMessage = "The role id is required")]
-    [Range(1, 5, ErrorMessage = "The role id is not valid")]
-    public enRole RoleID { get; set; }
+    [Required(ErrorMessage = "Role ID is required.")]
+    [Range(1, 5, ErrorMessage = "Role ID is not valid.")]
+    public required enRole RoleID { get; set; }
 }
