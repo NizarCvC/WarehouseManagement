@@ -10,5 +10,5 @@ public interface ICustomerRepository
     Task<int> GetCustomersCountAsync(CancellationToken ct);
     Task<int> AddNewCustomerAsync(CreateCustomerDto customer, CancellationToken ct);
     Task<bool> UpdateCustomerAsync(int customerId, CreateCustomerDto customer, CancellationToken ct);
-    Task<bool> DeleteCustomerAsync(int customerId, CancellationToken ct);
+    Task<bool> DeactivateCustomerAsync(int customerId, CancellationToken ct);
 }

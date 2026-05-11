@@ -1,3 +1,5 @@
+using WarehouseCore.enums;
+
 namespace WarehouseCore.Entities;
 
 public class Product
@@ -13,8 +15,7 @@ public class Product
     public bool IsActive { get; init; }
     public DateTime CreatedAt { get; init; }
     public DateTime? UpdatedAt { get; init; }
+    public enUnit Unit { get; init; }
     public int? CategoryID { get; init; }
-    public int UnitID { get; init; }
     public Category? Category { get; init; }
-    public required Unit Unit { get; init; }
 }

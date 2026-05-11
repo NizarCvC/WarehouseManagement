@@ -10,5 +10,5 @@ public interface ISupplierRepository
     Task<int> GetSuppliersCountAsync(CancellationToken ct);
     Task<int> AddNewSupplierAsync(CreateSupplierDto supplier, CancellationToken ct);
     Task<bool> UpdateSupplierAsync(int supplierId, CreateSupplierDto supplier, CancellationToken ct);
-    Task<bool> DeleteSupplierAsync(int supplierId, CancellationToken ct);
+    Task<bool> DeactivateSupplierAsync(int supplierId, CancellationToken ct);
 }

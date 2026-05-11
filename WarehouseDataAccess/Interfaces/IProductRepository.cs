@@ -10,5 +10,5 @@ public interface IProductRepository
     Task<int> GetProductsCountAsync(CancellationToken ct);
     Task<int> AddNewProductAsync(CreateProductDto product, CancellationToken ct);
     Task<bool> UpdateProductAsync(int productId, CreateProductDto product, CancellationToken ct);
-    Task<bool> DeleteProductAsync(int productId, CancellationToken ct);
+    Task<bool> DeactivateProductAsync(int productId, CancellationToken ct);
 }

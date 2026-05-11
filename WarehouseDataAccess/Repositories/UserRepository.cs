@@ -1,3 +1,4 @@
+using System.Data;
 using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Configuration;
 using WarehouseCore.DTOs.CreateDTOs;
@@ -12,7 +13,8 @@ public class UserRepository : IUserRepository
 
     public UserRepository(IConfiguration configuration)
     {
-        _connectionString = configuration.GetConnectionString("DefaultConnection") ?? "";
+        _connectionString = configuration.GetConnectionString("DefaultConnection")
+            ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
     }
 
     public async Task<User?> GetUserByIdAsync(int userId, CancellationToken ct)
@@ -24,8 +26,8 @@ public class UserRepository : IUserRepository
         using (SqlConnection connection = new SqlConnection(_connectionString))
         using (SqlCommand command = new SqlCommand(query, connection))
         {
-            command.Parameters.AddWithValue("@UserID", userId);
-            connection.Open();
+            command.Parameters.Add(new SqlParameter("@UserID", SqlDbType.Int) { Value = userId });
+            await connection.OpenAsync(ct);
 
             using (SqlDataReader reader = await command.ExecuteReaderAsync(ct))
             {
@@ -46,8 +48,8 @@ public class UserRepository : IUserRepository
         using (SqlConnection connection = new SqlConnection(_connectionString))
         using (SqlCommand command = new SqlCommand(query, connection))
         {
-            command.Parameters.AddWithValue("@Username", username);
-            connection.Open();
+            command.Parameters.Add(new SqlParameter("@Username", SqlDbType.NVarChar) { Value = username });
+            await connection.OpenAsync(ct);
 
             using (SqlDataReader reader = await command.ExecuteReaderAsync(ct))
             {
@@ -73,9 +75,9 @@ public class UserRepository : IUserRepository
         using (SqlConnection connection = new SqlConnection(_connectionString))
         using (SqlCommand command = new SqlCommand(query, connection))
         {
-            command.Parameters.AddWithValue("@PageNumber", page);
-            command.Parameters.AddWithValue("@RowsPerPage", pageSize);
-            connection.Open();
+            command.Parameters.Add(new SqlParameter("@PageNumber", SqlDbType.Int) { Value = page });
+            command.Parameters.Add(new SqlParameter("@RowsPerPage", SqlDbType.Int) { Value = pageSize });
+            await connection.OpenAsync(ct);
 
             using (SqlDataReader reader = await command.ExecuteReaderAsync(ct))
             {
@@ -98,12 +100,12 @@ public class UserRepository : IUserRepository
         using (SqlConnection connection = new SqlConnection(_connectionString))
         using (SqlCommand command = new SqlCommand(query, connection))
         {
-            connection.Open();
+            await connection.OpenAsync(ct);
 
-            object Result = await command.ExecuteScalarAsync(ct);
+            object result = await command.ExecuteScalarAsync(ct);
 
-            if (Result != null && int.TryParse(Result.ToString(), out int countNum))
-                countNumber = countNum;
+            if (result != null && result != DBNull.Value)
+                countNumber = Convert.ToInt32(result);
 
             return countNumber;
         }
@@ -119,12 +121,12 @@ public class UserRepository : IUserRepository
         using (SqlConnection connection = new SqlConnection(_connectionString))
         using (SqlCommand command = new SqlCommand(query, connection))
         {
-            command.Parameters.AddWithValue("@Name", user.Name);
-            command.Parameters.AddWithValue("@Username", user.Username);
-            command.Parameters.AddWithValue("@Email", user.Email);
-            command.Parameters.AddWithValue("@PasswordHash", user.Password);
-            command.Parameters.AddWithValue("@RoleID", user.RoleID);
-            connection.Open();
+            command.Parameters.Add(new SqlParameter("@Name", SqlDbType.NVarChar) { Value = user.Name });
+            command.Parameters.Add(new SqlParameter("@Username", SqlDbType.NVarChar) { Value = user.Username });
+            command.Parameters.Add(new SqlParameter("@Email", SqlDbType.NVarChar) { Value = user.Email });
+            command.Parameters.Add(new SqlParameter("@PasswordHash", SqlDbType.NVarChar) { Value = user.Password });
+            command.Parameters.Add(new SqlParameter("@RoleID", SqlDbType.Int) { Value = user.RoleID });
+            await connection.OpenAsync(ct);
 
             object result = await command.ExecuteScalarAsync(ct);
             if (result != null && result != DBNull.Value)
@@ -147,13 +149,13 @@ public class UserRepository : IUserRepository
         using (SqlConnection connection = new SqlConnection(_connectionString))
         using (SqlCommand command = new SqlCommand(query, connection))
         {
-            command.Parameters.AddWithValue("@UserID", userId);
-            command.Parameters.AddWithValue("@Name", user.Name);
-            command.Parameters.AddWithValue("@Username", user.Username);
-            command.Parameters.AddWithValue("@Email", user.Email);
-            command.Parameters.AddWithValue("@PasswordHash", user.Password);
-            command.Parameters.AddWithValue("@RoleID", user.RoleID);
-            connection.Open();
+            command.Parameters.Add(new SqlParameter("@UserID", SqlDbType.Int) { Value = userId });
+            command.Parameters.Add(new SqlParameter("@Name", SqlDbType.NVarChar) { Value = user.Name });
+            command.Parameters.Add(new SqlParameter("@Username", SqlDbType.NVarChar) { Value = user.Username });
+            command.Parameters.Add(new SqlParameter("@Email", SqlDbType.NVarChar) { Value = user.Email });
+            command.Parameters.Add(new SqlParameter("@PasswordHash", SqlDbType.NVarChar) { Value = user.Password });
+            command.Parameters.Add(new SqlParameter("@RoleID", SqlDbType.Int) { Value = user.RoleID });
+            await connection.OpenAsync(ct);
 
             int rowsAffected = await command.ExecuteNonQueryAsync(ct);
 
@@ -168,8 +170,8 @@ public class UserRepository : IUserRepository
         using (SqlConnection connection = new SqlConnection(_connectionString))
         using (SqlCommand command = new SqlCommand(query, connection))
         {
-            command.Parameters.AddWithValue("@UserID", userId);
-            connection.Open();
+            command.Parameters.Add(new SqlParameter("@UserID", SqlDbType.Int) { Value = userId });
+            await connection.OpenAsync(ct);
 
             int rowsAffected = await command.ExecuteNonQueryAsync(ct);
 
@@ -184,8 +186,8 @@ public class UserRepository : IUserRepository
         using (SqlConnection connection = new SqlConnection(_connectionString))
         using (SqlCommand command = new SqlCommand(query, connection))
         {
-            command.Parameters.AddWithValue("@UserID", userId);
-            connection.Open();
+            command.Parameters.Add(new SqlParameter("@UserID", SqlDbType.Int) { Value = userId });
+            await connection.OpenAsync(ct);
 
             object? result = await command.ExecuteScalarAsync(ct);
             return result != null;
@@ -199,8 +201,8 @@ public class UserRepository : IUserRepository
         using (SqlConnection connection = new SqlConnection(_connectionString))
         using (SqlCommand command = new SqlCommand(query, connection))
         {
-            command.Parameters.AddWithValue("@Username", username);
-            connection.Open();
+            command.Parameters.Add(new SqlParameter("@Username", SqlDbType.NVarChar) { Value = username });
+            await connection.OpenAsync(ct);
 
             object? result = await command.ExecuteScalarAsync(ct);
             return result != null;
@@ -217,11 +219,11 @@ public class UserRepository : IUserRepository
         using (SqlConnection connection = new SqlConnection(_connectionString))
         using (SqlCommand command = new SqlCommand(query, connection))
         {
-            command.Parameters.AddWithValue("@UserID", userId);
-            command.Parameters.AddWithValue("@RefreshToken", (object?)refreshToken ?? DBNull.Value);
-            command.Parameters.AddWithValue("@ExpiryTime", (object?)expiryTime ?? DBNull.Value);
+            command.Parameters.Add(new SqlParameter("@UserID", SqlDbType.Int) { Value = userId });
+            command.Parameters.Add(new SqlParameter("@RefreshToken", SqlDbType.NVarChar) { Value = (object?)refreshToken ?? DBNull.Value });
+            command.Parameters.Add(new SqlParameter("@ExpiryTime", SqlDbType.DateTime) { Value = (object?)expiryTime ?? DBNull.Value });
 
-            connection.Open();
+            await connection.OpenAsync(ct);
 
             int rowsAffected = await command.ExecuteNonQueryAsync(ct);
             return rowsAffected > 0;

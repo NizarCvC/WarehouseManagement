@@ -1,6 +1,5 @@
 using WarehouseCore.DTOs.CreateDTOs;
 using WarehouseCore.DTOs.ReadDTOs;
-using WarehouseCore.Entities;
 
 namespace WarehouseServices.Interfaces;
 
@@ -11,5 +10,5 @@ public interface ICustomerService
     Task<int> GetCustomersCountAsync(CancellationToken ct);
     Task<int> AddNewCustomerAsync(CreateCustomerDto customerDto, CancellationToken ct);
     Task<bool> UpdateCustomerAsync(int customerId, CreateCustomerDto customerDto, CancellationToken ct);
-    Task<bool> DeleteCustomerAsync(int customerId, CancellationToken ct);
+    Task<bool> DeactivateCustomerAsync(int customerId, CancellationToken ct);
 }

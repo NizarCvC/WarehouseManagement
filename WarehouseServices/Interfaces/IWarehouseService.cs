@@ -10,5 +10,5 @@ public interface IWarehouseService
     Task<int> GetWarehousesCountAsync(CancellationToken ct);
     Task<int> AddNewWarehouseAsync(CreateWarehouseDto warehouseDto, CancellationToken ct);
     Task<bool> UpdateWarehouseAsync(int warehouseId, CreateWarehouseDto warehouseDto, CancellationToken ct);
-    Task<bool> DeleteWarehouseAsync(int warehouseId, CancellationToken ct);
+    Task<bool> DeactivateWarehouseAsync(int warehouseId, CancellationToken ct);
 }
