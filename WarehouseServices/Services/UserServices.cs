@@ -65,7 +65,7 @@ public class UserServices(IUserRepository userRepository, ILogger<UserServices> 
         return newId;
     }
 
-    public async Task<bool> UpdateUserAsync(int userId, CreateUserDto userDto, CancellationToken ct)
+    public async Task UpdateUserAsync(int userId, CreateUserDto userDto, CancellationToken ct)
     {
         var userInfo = await userRepository.GetUserByIdAsync(userId, ct);
 
@@ -95,10 +95,9 @@ public class UserServices(IUserRepository userRepository, ILogger<UserServices> 
         }
 
         logger.LogInformation("The user with ID '{UserId}' was updated successfully", userId);
-        return isSuccess;
     }
 
-    public async Task<bool> DeactivateUserAsync(int userId, CancellationToken ct)
+    public async Task DeactivateUserAsync(int userId, CancellationToken ct)
     {
         bool isSuccess = await userRepository.DeactivateUserAsync(userId, ct);
 
@@ -106,7 +105,6 @@ public class UserServices(IUserRepository userRepository, ILogger<UserServices> 
             throw new NotFoundException($"The user with ID: {userId} not exists.");
 
         logger.LogInformation("The user with ID '{UserId}' was deactivated", userId);
-        return isSuccess;
     }
 
     public async Task<bool> IsUserIdExists(int userId, CancellationToken ct)

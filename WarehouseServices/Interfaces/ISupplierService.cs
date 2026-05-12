@@ -10,6 +10,6 @@ public interface ISupplierService
     Task<List<SupplierDto>> GetAllSuppliersAsync(CancellationToken ct, int page = 1, int pageSize = 10);
     Task<int> GetSuppliersCountAsync(CancellationToken ct);
     Task<int> AddNewSupplierAsync(CreateSupplierDto supplierDto, CancellationToken ct);
-    Task<bool> UpdateSupplierAsync(int supplierId, CreateSupplierDto supplierDto, CancellationToken ct);
-    Task<bool> DeleteSupplierAsync(int supplierId, CancellationToken ct);
+    Task UpdateSupplierAsync(int supplierId, CreateSupplierDto supplierDto, CancellationToken ct);
+    Task DeactivateSupplierAsync(int supplierId, CancellationToken ct);
 }

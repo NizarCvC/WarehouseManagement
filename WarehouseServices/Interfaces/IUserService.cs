@@ -10,8 +10,8 @@ public interface IUserService
     Task<List<UserDto>> GetAllUsersAsync(CancellationToken ct, int page = 1, int pageSize = 10);
     Task<int> GetUsersCountAsync(CancellationToken ct);
     Task<int> AddNewUserAsync(CreateUserDto userDto, CancellationToken ct);
-    Task<bool> UpdateUserAsync(int userId, CreateUserDto userDto, CancellationToken ct);
-    Task<bool> DeactivateUserAsync(int userId, CancellationToken ct);
+    Task UpdateUserAsync(int userId, CreateUserDto userDto, CancellationToken ct);
+    Task DeactivateUserAsync(int userId, CancellationToken ct);
     Task<bool> IsUserIdExists(int userId, CancellationToken ct);
     Task<bool> IsUsernameExists(string username, CancellationToken ct);
 }

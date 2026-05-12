@@ -1,3 +1,4 @@
+using System.Data;
 using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Configuration;
 using WarehouseCore.DTOs.CreateDTOs;
@@ -24,7 +25,49 @@ public class WarehouseRepository : IWarehouseRepository
         using (SqlConnection connection = new SqlConnection(_connectionString))
         using (SqlCommand command = new SqlCommand(query, connection))
         {
-            command.Parameters.Add(new SqlParameter("@WarehouseID", System.Data.SqlDbType.Int) { Value = warehouseId });
+            command.Parameters.Add(new SqlParameter("@WarehouseID", SqlDbType.Int) { Value = warehouseId });
+            await connection.OpenAsync(ct);
+
+            using (SqlDataReader reader = await command.ExecuteReaderAsync(ct))
+            {
+                if (await reader.ReadAsync(ct))
+                    return MapReaderToWarehouse(reader);
+                else
+                    return null;
+            }
+        }
+    }
+
+    public async Task<Warehouse?> GetWarehouseByNameAsync(string name, CancellationToken ct)
+    {
+        string query = @"SELECT w.WarehouseID, w.Name, w.Code, w.[Location], w.IsActive, w.CreatedAt FROM Warehouses w
+                        WHERE w.Name = @Name";
+
+        using (SqlConnection connection = new SqlConnection(_connectionString))
+        using (SqlCommand command = new SqlCommand(query, connection))
+        {
+            command.Parameters.Add(new SqlParameter("@Name", SqlDbType.NVarChar) { Value = name });
+            await connection.OpenAsync(ct);
+
+            using (SqlDataReader reader = await command.ExecuteReaderAsync(ct))
+            {
+                if (await reader.ReadAsync(ct))
+                    return MapReaderToWarehouse(reader);
+                else
+                    return null;
+            }
+        }
+    }
+
+    public async Task<Warehouse?> GetWarehouseByCodeAsync(string code, CancellationToken ct)
+    {
+        string query = @"SELECT w.WarehouseID, w.Name, w.Code, w.[Location], w.IsActive, w.CreatedAt FROM Warehouses w
+                        WHERE w.Code = @Code";
+
+        using (SqlConnection connection = new SqlConnection(_connectionString))
+        using (SqlCommand command = new SqlCommand(query, connection))
+        {
+            command.Parameters.Add(new SqlParameter("@Code", SqlDbType.VarChar) { Value = code });
             await connection.OpenAsync(ct);
 
             using (SqlDataReader reader = await command.ExecuteReaderAsync(ct))
@@ -49,8 +92,8 @@ public class WarehouseRepository : IWarehouseRepository
         using (SqlConnection connection = new SqlConnection(_connectionString))
         using (SqlCommand command = new SqlCommand(query, connection))
         {
-            command.Parameters.Add(new SqlParameter("@PageNumber", System.Data.SqlDbType.Int) { Value = page });
-            command.Parameters.Add(new SqlParameter("@RowsPerPage", System.Data.SqlDbType.Int) { Value = pageSize });
+            command.Parameters.Add(new SqlParameter("@PageNumber", SqlDbType.Int) { Value = page });
+            command.Parameters.Add(new SqlParameter("@RowsPerPage", SqlDbType.Int) { Value = pageSize });
             await connection.OpenAsync(ct);
 
             using (SqlDataReader reader = await command.ExecuteReaderAsync(ct))
@@ -95,9 +138,9 @@ public class WarehouseRepository : IWarehouseRepository
         using (SqlConnection connection = new SqlConnection(_connectionString))
         using (SqlCommand command = new SqlCommand(query, connection))
         {
-            command.Parameters.Add(new SqlParameter("@Name", System.Data.SqlDbType.NVarChar) { Value = warehouse.Name });
-            command.Parameters.Add(new SqlParameter("@Code", System.Data.SqlDbType.NVarChar) { Value = warehouse.Code });
-            command.Parameters.Add(new SqlParameter("@Location", System.Data.SqlDbType.NVarChar) { Value = warehouse.Location });
+            command.Parameters.Add(new SqlParameter("@Name", SqlDbType.NVarChar) { Value = warehouse.Name });
+            command.Parameters.Add(new SqlParameter("@Code", SqlDbType.NVarChar) { Value = warehouse.Code });
+            command.Parameters.Add(new SqlParameter("@Location", SqlDbType.NVarChar) { Value = warehouse.Location });
             await connection.OpenAsync(ct);
 
             object result = await command.ExecuteScalarAsync(ct);
@@ -119,10 +162,10 @@ public class WarehouseRepository : IWarehouseRepository
         using (SqlConnection connection = new SqlConnection(_connectionString))
         using (SqlCommand command = new SqlCommand(query, connection))
         {
-            command.Parameters.Add(new SqlParameter("@WarehouseID", System.Data.SqlDbType.Int) { Value = warehouseId });
-            command.Parameters.Add(new SqlParameter("@Name", System.Data.SqlDbType.NVarChar) { Value = warehouse.Name });
-            command.Parameters.Add(new SqlParameter("@Code", System.Data.SqlDbType.NVarChar) { Value = warehouse.Code });
-            command.Parameters.Add(new SqlParameter("@Location", System.Data.SqlDbType.NVarChar) { Value = warehouse.Location });
+            command.Parameters.Add(new SqlParameter("@WarehouseID", SqlDbType.Int) { Value = warehouseId });
+            command.Parameters.Add(new SqlParameter("@Name", SqlDbType.NVarChar) { Value = warehouse.Name });
+            command.Parameters.Add(new SqlParameter("@Code", SqlDbType.NVarChar) { Value = warehouse.Code });
+            command.Parameters.Add(new SqlParameter("@Location", SqlDbType.NVarChar) { Value = warehouse.Location });
 
             await connection.OpenAsync(ct);
 
@@ -139,7 +182,7 @@ public class WarehouseRepository : IWarehouseRepository
         using (SqlConnection connection = new SqlConnection(_connectionString))
         using (SqlCommand command = new SqlCommand(query, connection))
         {
-            command.Parameters.Add(new SqlParameter("@WarehouseId", System.Data.SqlDbType.Int) { Value = warehouseId });
+            command.Parameters.Add(new SqlParameter("@WarehouseId", SqlDbType.Int) { Value = warehouseId });
             await connection.OpenAsync(ct);
 
             int rowsAffected = await command.ExecuteNonQueryAsync(ct);
@@ -159,5 +202,48 @@ public class WarehouseRepository : IWarehouseRepository
             IsActive = reader.GetBoolean(reader.GetOrdinal("IsActive")),
             CreatedAt = reader.GetDateTime(reader.GetOrdinal("CreatedAt")),
         };
+    }
+
+    public async Task<bool> IsWarehouseExistsByIdAsync(int warehouseId, CancellationToken ct)
+    {
+        string query = @"SELECT 1 FROM Warehouses WHERE WarehouseID = @WarehouseID";
+
+        using (SqlConnection connection = new SqlConnection(_connectionString))
+        using (SqlCommand command = new SqlCommand(query, connection))
+        {
+            command.Parameters.Add(new SqlParameter("@WarehouseID", SqlDbType.Int) { Value = warehouseId });
+            await connection.OpenAsync(ct);
+
+            object? result = await command.ExecuteScalarAsync(ct);
+            return result != null;
+        }
+    }
+
+    public async Task<bool> IsWarehouseExistsByNameAsync(string name, CancellationToken ct)
+    {
+        string query = @"SELECT 1 FROM Warehouses WHERE Name = @Name";
+
+        using (SqlConnection connection = new SqlConnection(_connectionString))
+        using (SqlCommand command = new SqlCommand(query, connection))
+        {
+            command.Parameters.Add(new SqlParameter("@Name", SqlDbType.NVarChar) { Value = name });
+            await connection.OpenAsync(ct);
+            object? result = await command.ExecuteScalarAsync(ct);
+            return result != null;
+        }
+    }
+
+    public async Task<bool> IsWarehouseExistsByCodeAsync(string code, CancellationToken ct)
+    {
+        string query = @"SELECT 1 FROM Warehouses WHERE Code = @Code";
+
+        using (SqlConnection connection = new SqlConnection(_connectionString))
+        using (SqlCommand command = new SqlCommand(query, connection))
+        {
+            command.Parameters.Add(new SqlParameter("@Code", SqlDbType.NVarChar) { Value = code });
+            await connection.OpenAsync(ct);
+            object? result = await command.ExecuteScalarAsync(ct);
+            return result != null;
+        }
     }
 }
