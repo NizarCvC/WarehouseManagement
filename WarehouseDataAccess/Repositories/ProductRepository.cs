@@ -42,6 +42,54 @@ public class ProductRepository : IProductRepository
         }
     }
 
+    public async Task<Product?> GetProductBySkuAsync(string sku, CancellationToken ct)
+    {
+        string query = @"SELECT p.ProductID, p.Name AS ProductName, p.Sku, p.Barcode, p.Description, p.PurchasePrice,
+                        p.SalePrice, p.MinStock, p.IsActive, p.CreatedAt AS ProductCreatedAt, p.UpdatedAt, p.UnitID,
+                        p.CategoryID, c.Name AS CategoryName, c.CreatedAt AS CategoryCreatedAt, c.ParentID
+                        FROM Products p LEFT JOIN Categories c ON p.CategoryID = c.CategoryID
+                        WHERE P.Sku = @Sku";
+
+        using (SqlConnection connection = new SqlConnection(_connectionString))
+        using (SqlCommand command = new SqlCommand(query, connection))
+        {
+            command.Parameters.Add(new SqlParameter("@Sku", SqlDbType.VarChar) { Value = sku });
+            await connection.OpenAsync(ct);
+
+            using (SqlDataReader reader = await command.ExecuteReaderAsync(ct))
+            {
+                if (await reader.ReadAsync(ct))
+                    return MapReaderToProduct(reader);
+                else
+                    return null;
+            }
+        }
+    }
+
+    public async Task<Product?> GetProductByBarcodeAsync(string barcode, CancellationToken ct)
+    {
+        string query = @"SELECT p.ProductID, p.Name AS ProductName, p.Sku, p.Barcode, p.Description, p.PurchasePrice,
+                        p.SalePrice, p.MinStock, p.IsActive, p.CreatedAt AS ProductCreatedAt, p.UpdatedAt, p.UnitID,
+                        p.CategoryID, c.Name AS CategoryName, c.CreatedAt AS CategoryCreatedAt, c.ParentID
+                        FROM Products p LEFT JOIN Categories c ON p.CategoryID = c.CategoryID
+                        WHERE P.Barcode = @Barcode";
+
+        using (SqlConnection connection = new SqlConnection(_connectionString))
+        using (SqlCommand command = new SqlCommand(query, connection))
+        {
+            command.Parameters.Add(new SqlParameter("@Barcode", SqlDbType.VarChar) { Value = barcode });
+            await connection.OpenAsync(ct);
+
+            using (SqlDataReader reader = await command.ExecuteReaderAsync(ct))
+            {
+                if (await reader.ReadAsync(ct))
+                    return MapReaderToProduct(reader);
+                else
+                    return null;
+            }
+        }
+    }
+
     public async Task<List<Product>> GetAllProductsAsync(CancellationToken ct, int page = 1, int pageSize = 10)
     {
         List<Product> products = new List<Product>();
@@ -181,7 +229,7 @@ public class ProductRepository : IProductRepository
         return new Product()
         {
             ProductID = reader.GetInt32(reader.GetOrdinal("ProductID")),
-            Name = reader.GetString(reader.GetOrdinal("ProductName")), 
+            Name = reader.GetString(reader.GetOrdinal("ProductName")),
             Sku = reader.GetString(reader.GetOrdinal("Sku")),
             Barcode = reader.GetString(reader.GetOrdinal("Barcode")),
             Description = reader.IsDBNull(reader.GetOrdinal("Description")) ?
@@ -190,18 +238,63 @@ public class ProductRepository : IProductRepository
             SalePrice = reader.GetDecimal(reader.GetOrdinal("SalePrice")),
             MinStock = reader.GetInt32(reader.GetOrdinal("MinStock")),
             IsActive = reader.GetBoolean(reader.GetOrdinal("IsActive")),
-            CreatedAt = reader.GetDateTime(reader.GetOrdinal("ProductCreatedAt")), 
+            CreatedAt = reader.GetDateTime(reader.GetOrdinal("ProductCreatedAt")),
             UpdatedAt = reader.IsDBNull(reader.GetOrdinal("UpdatedAt")) ?
                 null : reader.GetDateTime(reader.GetOrdinal("UpdatedAt")),
-            Unit = (enUnit)reader.GetInt32(reader.GetOrdinal("UnitID")), 
+            Unit = (enUnit)reader.GetInt32(reader.GetOrdinal("UnitID")),
             CategoryID = reader.IsDBNull(reader.GetOrdinal("CategoryID")) ?
                  null : reader.GetInt32(reader.GetOrdinal("CategoryID")),
             Category = reader.IsDBNull(reader.GetOrdinal("CategoryID")) ? null : new Category()
             {
                 CategoryID = reader.GetInt32(reader.GetOrdinal("CategoryID")),
-                Name = reader.GetString(reader.GetOrdinal("CategoryName")), 
-                CreatedAt = reader.GetDateTime(reader.GetOrdinal("CategoryCreatedAt")), 
+                Name = reader.GetString(reader.GetOrdinal("CategoryName")),
+                CreatedAt = reader.GetDateTime(reader.GetOrdinal("CategoryCreatedAt")),
             }
         };
+    }
+
+    public async Task<bool> IsProductExistsByIdAsync(int productId, CancellationToken ct)
+    {
+       string query = @"SELECT 1 FROM Products WHERE ProductID = @ProductID";
+
+        using (SqlConnection connection = new SqlConnection(_connectionString))
+        using (SqlCommand command = new SqlCommand(query, connection))
+        {
+            command.Parameters.Add(new SqlParameter("@ProductID", SqlDbType.Int) { Value = productId });
+            await connection.OpenAsync(ct);
+
+            object? result = await command.ExecuteScalarAsync(ct);
+            return result != null;
+        }
+    }
+
+    public async Task<bool> IsProductExistsBySkuAsync(string sku, CancellationToken ct)
+    {
+        string query = @"SELECT 1 FROM Products WHERE Sku = @Sku";
+
+        using (SqlConnection connection = new SqlConnection(_connectionString))
+        using (SqlCommand command = new SqlCommand(query, connection))
+        {
+            command.Parameters.Add(new SqlParameter("@Sku", SqlDbType.VarChar) { Value = sku });
+            await connection.OpenAsync(ct);
+
+            object? result = await command.ExecuteScalarAsync(ct);
+            return result != null;
+        }
+    }
+
+    public async Task<bool> IsProductExistsByBarcodeAsync(string barcode, CancellationToken ct)
+    {
+        string query = @"SELECT 1 FROM Products WHERE Barcode = @Barcode";
+
+        using (SqlConnection connection = new SqlConnection(_connectionString))
+        using (SqlCommand command = new SqlCommand(query, connection))
+        {
+            command.Parameters.Add(new SqlParameter("@Barcode", SqlDbType.VarChar) { Value = barcode });
+            await connection.OpenAsync(ct);
+
+            object? result = await command.ExecuteScalarAsync(ct);
+            return result != null;
+        }
     }
 }

@@ -11,7 +11,7 @@ namespace WarehouseServices.Services;
 
 public class UserServices(IUserRepository userRepository, ILogger<UserServices> logger) : IUserService
 {
-    public async Task<UserDto?> GetUserByIdAsync(int userId, CancellationToken ct)
+    public async Task<UserDto> GetUserByIdAsync(int userId, CancellationToken ct)
     {
         User? userInfo = await userRepository.GetUserByIdAsync(userId, ct);
 
@@ -22,7 +22,7 @@ public class UserServices(IUserRepository userRepository, ILogger<UserServices> 
         return UserDto.FromEntity(userInfo);
     }
 
-    public async Task<UserDto?> GetUserByUsernameAsync(string username, CancellationToken ct)
+    public async Task<UserDto> GetUserByUsernameAsync(string username, CancellationToken ct)
     {
         var userInfo = await userRepository.GetByUsernameAsync(username, ct);
 

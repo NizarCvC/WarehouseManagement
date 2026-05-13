@@ -11,7 +11,7 @@ namespace WarehouseServices.Services;
 public class WarehouseService(IWarehouseRepository warehouseRepository,
     ILogger<WarehouseService> logger) : IWarehouseService
 {
-    public async Task<WarehouseDto?> GetWarehouseByIdAsync(int warehouseId, CancellationToken ct)
+    public async Task<WarehouseDto> GetWarehouseByIdAsync(int warehouseId, CancellationToken ct)
     {
         Warehouse? warehouseInfo = await warehouseRepository.GetWarehouseByIdAsync(warehouseId, ct);
 
@@ -22,7 +22,7 @@ public class WarehouseService(IWarehouseRepository warehouseRepository,
         return WarehouseDto.FromEntity(warehouseInfo);
     }
 
-    public async Task<WarehouseDto?> GetWarehouseByNameAsync(string name, CancellationToken ct)
+    public async Task<WarehouseDto> GetWarehouseByNameAsync(string name, CancellationToken ct)
     {
         Warehouse? warehouseInfo = await warehouseRepository.GetWarehouseByNameAsync(name, ct);
 
@@ -33,7 +33,7 @@ public class WarehouseService(IWarehouseRepository warehouseRepository,
         return WarehouseDto.FromEntity(warehouseInfo);
     }
 
-    public async Task<WarehouseDto?> GetWarehouseByCodeAsync(string code, CancellationToken ct)
+    public async Task<WarehouseDto> GetWarehouseByCodeAsync(string code, CancellationToken ct)
     {
         Warehouse? warehouseInfo = await warehouseRepository.GetWarehouseByCodeAsync(code, ct);
 
@@ -105,7 +105,7 @@ public class WarehouseService(IWarehouseRepository warehouseRepository,
 
         if (!isSuccess)
         {
-            logger.LogError("Failed to update the warehouse with id '{warehouseId}' in the system.", warehouseId);
+            logger.LogError("Failed to update the warehouse with id '{WarehouseId}' in the system.", warehouseId);
             throw new InternalServerErrorException("Failed to update the warehouse.");
         }
 
