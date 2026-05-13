@@ -1,4 +1,4 @@
-namespace M02.BuildingRESTFulAPI.Responses;
+namespace WarehouseAPI.Helpers;
 
 public class PagedResult<T>
 {

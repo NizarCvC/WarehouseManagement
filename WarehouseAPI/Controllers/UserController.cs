@@ -1,8 +1,8 @@
 using Asp.Versioning;
-using M02.BuildingRESTFulAPI.Responses;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
+using WarehouseAPI.Helpers;
 using WarehouseCore.DTOs.CreateDTOs;
 using WarehouseCore.DTOs.ReadDTOs;
 using WarehouseServices.Interfaces;
@@ -41,7 +41,7 @@ public class UserController(IUserService userService) : ControllerBase
     [EndpointSummary("Check if the user exists by id")]
     public async Task<IActionResult> HeadUser(int userId, CancellationToken ct)
     {
-        return await userService.IsUserIdExists(userId, ct) ? Ok() : NotFound();
+        return await userService.IsUserIdExistsAsync(userId, ct) ? Ok() : NotFound();
     }
 
     [HttpHead("by-username/{username}")]
@@ -54,7 +54,7 @@ public class UserController(IUserService userService) : ControllerBase
     [EndpointSummary("Check if the user exists by username")]
     public async Task<IActionResult> HeadUser(string username, CancellationToken ct)
     {
-        return await userService.IsUsernameExists(username, ct) ? Ok() : NotFound();
+        return await userService.IsUsernameExistsAsync(username, ct) ? Ok() : NotFound();
     }
 
     [HttpGet("by-id/{userId:int}", Name = "GetUserById")]

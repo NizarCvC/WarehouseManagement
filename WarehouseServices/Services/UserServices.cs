@@ -49,7 +49,7 @@ public class UserServices(IUserRepository userRepository, ILogger<UserServices> 
 
     public async Task<int> AddNewUserAsync(CreateUserDto userDto, CancellationToken ct)
     {
-        if (await userRepository.IsUsernameExists(userDto.Username, ct))
+        if (await userRepository.IsUsernameExistsAsync(userDto.Username, ct))
             throw new ConflictException($"The user with username '{userDto.Username}' is already used.");
 
         userDto.Password = Hashing.HashPasswordOnly(userDto.Password);
@@ -74,7 +74,7 @@ public class UserServices(IUserRepository userRepository, ILogger<UserServices> 
 
         if (userInfo.Username != userDto.Username)
         {
-            bool isUsernameUsed = await userRepository.IsUsernameExists(userDto.Username, ct);
+            bool isUsernameUsed = await userRepository.IsUsernameExistsAsync(userDto.Username, ct);
 
             if (isUsernameUsed)
                 throw new ConflictException($"The username: {userDto.Username} is already used.");
@@ -107,9 +107,9 @@ public class UserServices(IUserRepository userRepository, ILogger<UserServices> 
         logger.LogInformation("The user with ID '{UserId}' was deactivated", userId);
     }
 
-    public async Task<bool> IsUserIdExists(int userId, CancellationToken ct)
+    public async Task<bool> IsUserIdExistsAsync(int userId, CancellationToken ct)
     {
-        bool isFound = await userRepository.IsUserIdExists(userId, ct);
+        bool isFound = await userRepository.IsUserIdExistsAsync(userId, ct);
 
         if (isFound)
             logger.LogDebug("The user with id '{UserId}' is found.", userId);
@@ -119,9 +119,9 @@ public class UserServices(IUserRepository userRepository, ILogger<UserServices> 
         return isFound;
     }
 
-    public async Task<bool> IsUsernameExists(string username, CancellationToken ct)
+    public async Task<bool> IsUsernameExistsAsync(string username, CancellationToken ct)
     {
-        bool isFound = await userRepository.IsUsernameExists(username, ct);
+        bool isFound = await userRepository.IsUsernameExistsAsync(username, ct);
 
         if (isFound)
             logger.LogDebug("The user with username '{Username}' is found.", username);

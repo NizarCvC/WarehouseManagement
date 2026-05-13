@@ -179,7 +179,7 @@ public class UserRepository : IUserRepository
         }
     }
 
-    public async Task<bool> IsUserIdExists(int userId, CancellationToken ct)
+    public async Task<bool> IsUserIdExistsAsync(int userId, CancellationToken ct)
     {
         string query = @"SELECT 1 FROM Users WHERE UserID = @UserID";
 
@@ -194,7 +194,7 @@ public class UserRepository : IUserRepository
         }
     }
 
-    public async Task<bool> IsUsernameExists(string username, CancellationToken ct)
+    public async Task<bool> IsUsernameExistsAsync(string username, CancellationToken ct)
     {
         string query = @"SELECT 1 FROM Users WHERE Username = @Username";
 
