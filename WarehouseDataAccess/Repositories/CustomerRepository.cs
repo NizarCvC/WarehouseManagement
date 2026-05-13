@@ -39,6 +39,52 @@ public class CustomerRepository : ICustomerRepository
         }
     }
 
+    public async Task<Customer?> GetCustomerByEmailAsync(string email, CancellationToken ct)
+    {
+        string query = @"SELECT c.CustomerID, c.Name, c.Phone, c.Email, c.Address, c.IsActive, c.CreatedAt 
+                        FROM Customers c 
+                        WHERE c.Email = @Email";
+
+        using (SqlConnection connection = new SqlConnection(_connectionString))
+        using (SqlCommand command = new SqlCommand(query, connection))
+        {
+            command.Parameters.Add(new SqlParameter("@Email", SqlDbType.VarChar) { Value = email });
+
+            await connection.OpenAsync(ct);
+
+            using (SqlDataReader reader = await command.ExecuteReaderAsync(ct))
+            {
+                if (await reader.ReadAsync(ct))
+                    return MapReaderToCustomer(reader);
+                else
+                    return null;
+            }
+        }
+    }
+
+    public async Task<Customer?> GetCustomerByPhoneAsync(string phone, CancellationToken ct)
+    {
+        string query = @"SELECT c.CustomerID, c.Name, c.Phone, c.Email, c.Address, c.IsActive, c.CreatedAt 
+                        FROM Customers c 
+                        WHERE c.Phone = @Phone";
+
+        using (SqlConnection connection = new SqlConnection(_connectionString))
+        using (SqlCommand command = new SqlCommand(query, connection))
+        {
+            command.Parameters.Add(new SqlParameter("@Phone", SqlDbType.VarChar) { Value = phone });
+
+            await connection.OpenAsync(ct);
+
+            using (SqlDataReader reader = await command.ExecuteReaderAsync(ct))
+            {
+                if (await reader.ReadAsync(ct))
+                    return MapReaderToCustomer(reader);
+                else
+                    return null;
+            }
+        }
+    }
+
     public async Task<List<Customer>> GetAllCustomersAsync(CancellationToken ct, int page = 1, int pageSize = 10)
     {
         List<Customer> customers = new List<Customer>();
@@ -102,7 +148,7 @@ public class CustomerRepository : ICustomerRepository
             command.Parameters.Add(new SqlParameter("@Phone", SqlDbType.VarChar) { Value = customer.Phone });
             command.Parameters.Add(new SqlParameter("@Email", SqlDbType.VarChar) { Value = customer.Email });
             command.Parameters.Add(new SqlParameter("@Address", SqlDbType.NVarChar) { Value = customer.Address });
-            
+
             await connection.OpenAsync(ct);
 
             object result = await command.ExecuteScalarAsync(ct);
@@ -167,5 +213,50 @@ public class CustomerRepository : ICustomerRepository
             IsActive = reader.GetBoolean(reader.GetOrdinal("IsActive")),
             CreatedAt = reader.GetDateTime(reader.GetOrdinal("CreatedAt"))
         };
+    }
+
+    public async Task<bool> IsCustomerExistsByIdAsync(int customerId, CancellationToken ct)
+    {
+        string query = @"SELECT 1 FROM Customers WHERE CustomerID = @CustomerID";
+
+        using (SqlConnection connection = new SqlConnection(_connectionString))
+        using (SqlCommand command = new SqlCommand(query, connection))
+        {
+            command.Parameters.Add(new SqlParameter("@CustomerID", SqlDbType.Int) { Value = customerId });
+            await connection.OpenAsync(ct);
+
+            object? result = await command.ExecuteScalarAsync(ct);
+            return result != null;
+        }
+    }
+
+    public async Task<bool> IsCustomerExistsByEmailAsync(string email, CancellationToken ct)
+    {
+        string query = @"SELECT 1 FROM Customers WHERE Email = @Email";
+
+        using (SqlConnection connection = new SqlConnection(_connectionString))
+        using (SqlCommand command = new SqlCommand(query, connection))
+        {
+            command.Parameters.Add(new SqlParameter("@Email", SqlDbType.VarChar) { Value = email });
+            await connection.OpenAsync(ct);
+
+            object? result = await command.ExecuteScalarAsync(ct);
+            return result != null;
+        }
+    }   
+
+    public async Task<bool> IsCustomerExistsByPhoneAsync(string phone, CancellationToken ct)
+    {
+        string query = @"SELECT 1 FROM Customers WHERE Phone = @Phone";
+
+        using (SqlConnection connection = new SqlConnection(_connectionString))
+        using (SqlCommand command = new SqlCommand(query, connection))
+        {
+            command.Parameters.Add(new SqlParameter("@Phone", SqlDbType.VarChar) { Value = phone });
+            await connection.OpenAsync(ct);
+
+            object? result = await command.ExecuteScalarAsync(ct);
+            return result != null;
+        }
     }
 }

@@ -39,6 +39,72 @@ public class SupplierRepository : ISupplierRepository
         }
     }
 
+    public async Task<Supplier?> GetSupplierByEmailAsync(string email, CancellationToken ct)
+    {
+        string query = @"SELECT s.SupplierID, s.Name, s.Phone, s.Email, s.Address, s.TaxNumber, s.IsActive, s.CreatedAt 
+                        FROM Suppliers s 
+                        WHERE s.Email = @Email";
+
+        using (SqlConnection connection = new SqlConnection(_connectionString))
+        using (SqlCommand command = new SqlCommand(query, connection))
+        {
+            command.Parameters.Add(new SqlParameter("@Email", SqlDbType.VarChar) { Value = email });
+            await connection.OpenAsync(ct);
+
+            using (SqlDataReader reader = await command.ExecuteReaderAsync(ct))
+            {
+                if (await reader.ReadAsync(ct))
+                    return MapReaderToSupplier(reader);
+                else
+                    return null;
+            }
+        }
+    }
+
+    public async Task<Supplier?> GetSupplierByPhoneAsync(string phone, CancellationToken ct)
+    {
+        string query = @"SELECT s.SupplierID, s.Name, s.Phone, s.Email, s.Address, s.TaxNumber, s.IsActive, s.CreatedAt 
+                        FROM Suppliers s 
+                        WHERE s.Phone = @Phone";
+
+        using (SqlConnection connection = new SqlConnection(_connectionString))
+        using (SqlCommand command = new SqlCommand(query, connection))
+        {
+            command.Parameters.Add(new SqlParameter("@Phone", SqlDbType.VarChar) { Value = phone });
+            await connection.OpenAsync(ct);
+
+            using (SqlDataReader reader = await command.ExecuteReaderAsync(ct))
+            {
+                if (await reader.ReadAsync(ct))
+                    return MapReaderToSupplier(reader);
+                else
+                    return null;
+            }
+        }
+    }
+
+    public async Task<Supplier?> GetSupplierByTaxNumberAsync(string taxNumber, CancellationToken ct)
+    {
+        string query = @"SELECT s.SupplierID, s.Name, s.Phone, s.Email, s.Address, s.TaxNumber, s.IsActive, s.CreatedAt 
+                        FROM Suppliers s 
+                        WHERE s.TaxNumber = @TaxNumber";
+
+        using (SqlConnection connection = new SqlConnection(_connectionString))
+        using (SqlCommand command = new SqlCommand(query, connection))
+        {
+            command.Parameters.Add(new SqlParameter("@TaxNumber", SqlDbType.VarChar) { Value = taxNumber });
+            await connection.OpenAsync(ct);
+
+            using (SqlDataReader reader = await command.ExecuteReaderAsync(ct))
+            {
+                if (await reader.ReadAsync(ct))
+                    return MapReaderToSupplier(reader);
+                else
+                    return null;
+            }
+        }
+    }
+
     public async Task<List<Supplier>> GetAllSuppliersAsync(CancellationToken ct, int page = 1, int pageSize = 10)
     {
         List<Supplier> suppliers = new List<Supplier>();
@@ -78,7 +144,6 @@ public class SupplierRepository : ISupplierRepository
         using (SqlCommand command = new SqlCommand(query, connection))
         {
             await connection.OpenAsync(ct);
-
             object result = await command.ExecuteScalarAsync(ct);
 
             if (result != null && result != DBNull.Value)
@@ -103,7 +168,7 @@ public class SupplierRepository : ISupplierRepository
             command.Parameters.Add(new SqlParameter("@Email", SqlDbType.VarChar) { Value = supplier.Email });
             command.Parameters.Add(new SqlParameter("@Address", SqlDbType.NVarChar) { Value = supplier.Address });
             command.Parameters.Add(new SqlParameter("@TaxNumber", SqlDbType.VarChar) { Value = supplier.TaxNumber });
-            
+
             await connection.OpenAsync(ct);
 
             object result = await command.ExecuteScalarAsync(ct);
@@ -137,7 +202,6 @@ public class SupplierRepository : ISupplierRepository
             await connection.OpenAsync(ct);
 
             int rowsAffected = await command.ExecuteNonQueryAsync(ct);
-
             return rowsAffected > 0;
         }
     }
@@ -153,8 +217,67 @@ public class SupplierRepository : ISupplierRepository
             await connection.OpenAsync(ct);
 
             int rowsAffected = await command.ExecuteNonQueryAsync(ct);
-
             return rowsAffected > 0;
+        }
+    }
+
+    public async Task<bool> IsSupplierExistsByIdAsync(int supplierId, CancellationToken ct)
+    {
+        string query = @"SELECT 1 FROM Suppliers WHERE SupplierID = @SupplierID";
+
+        using (SqlConnection connection = new SqlConnection(_connectionString))
+        using (SqlCommand command = new SqlCommand(query, connection))
+        {
+            command.Parameters.Add(new SqlParameter("@SupplierID", SqlDbType.Int) { Value = supplierId });
+            await connection.OpenAsync(ct);
+
+            object? result = await command.ExecuteScalarAsync(ct);
+            return result != null;
+        }
+    }
+
+    public async Task<bool> IsSupplierExistsByEmailAsync(string email, CancellationToken ct)
+    {
+        string query = @"SELECT 1 FROM Suppliers WHERE Email = @Email";
+
+        using (SqlConnection connection = new SqlConnection(_connectionString))
+        using (SqlCommand command = new SqlCommand(query, connection))
+        {
+            command.Parameters.Add(new SqlParameter("@Email", SqlDbType.VarChar) { Value = email });
+            await connection.OpenAsync(ct);
+
+            object? result = await command.ExecuteScalarAsync(ct);
+            return result != null;
+        }
+    }   
+
+    public async Task<bool> IsSupplierExistsByPhoneAsync(string phone, CancellationToken ct)
+    {
+        string query = @"SELECT 1 FROM Suppliers WHERE Phone = @Phone";
+
+        using (SqlConnection connection = new SqlConnection(_connectionString))
+        using (SqlCommand command = new SqlCommand(query, connection))
+        {
+            command.Parameters.Add(new SqlParameter("@Phone", SqlDbType.VarChar) { Value = phone });
+            await connection.OpenAsync(ct);
+
+            object? result = await command.ExecuteScalarAsync(ct);
+            return result != null;
+        }
+    }
+
+    public async Task<bool> IsSupplierExistsByTaxNumberAsync(string taxNumber, CancellationToken ct)
+    {
+        string query = @"SELECT 1 FROM Suppliers WHERE TaxNumber = @TaxNumber";
+
+        using (SqlConnection connection = new SqlConnection(_connectionString))
+        using (SqlCommand command = new SqlCommand(query, connection))
+        {
+            command.Parameters.Add(new SqlParameter("@TaxNumber", SqlDbType.VarChar) { Value = taxNumber });
+            await connection.OpenAsync(ct);
+
+            object? result = await command.ExecuteScalarAsync(ct);
+            return result != null;
         }
     }
 
