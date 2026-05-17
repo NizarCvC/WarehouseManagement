@@ -3,7 +3,6 @@ using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Configuration;
 using WarehouseCore.DTOs.CreateDTOs;
 using WarehouseCore.Entities;
-using WarehouseCore.enums;
 using WarehouseDataAccess.Interfaces;
 namespace WarehouseDataAccess.Repositories;
 
@@ -241,7 +240,7 @@ public class UserRepository : IUserRepository
             PasswordHash = reader.GetString(reader.GetOrdinal("PasswordHash")),
             IsActive = reader.GetBoolean(reader.GetOrdinal("IsActive")),
             CreatedAt = reader.GetDateTime(reader.GetOrdinal("CreatedAt")),
-            Role = (enRole)reader.GetInt32(reader.GetOrdinal("RoleID")),
+            RoleID = reader.GetInt32(reader.GetOrdinal("RoleID")),
             RefreshToken = reader.IsDBNull(reader.GetOrdinal("RefreshToken"))
                 ? null
                 : reader.GetString(reader.GetOrdinal("RefreshToken")),
@@ -250,5 +249,4 @@ public class UserRepository : IUserRepository
                 : reader.GetDateTime(reader.GetOrdinal("RefreshTokenExpiryTime"))
         };
     }
-
 }

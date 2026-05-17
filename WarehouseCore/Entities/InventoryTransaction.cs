@@ -8,13 +8,13 @@ public class InventoryTransaction
     public decimal UnitCost { get; init; }
     public int ReferenceID { get; init; }
     public byte ReferenceTypeID { get; init; }
-    public required ReferenceType ReferenceType { get; init; }
+    public ReferenceType ReferenceType { get; init; } = null!;
     public string? Note { get; init; }
     public int ProductID { get; init; }
-    public required Product Product { get; init; }
+    public Product Product { get; init; } = null!;
     public int WarehouseID { get; init; }
-    public required Warehouse Warehouse { get; init; }
+    public Warehouse Warehouse { get; init; } = null!;
     public int CreatedByID { get; init; }
-    public required User CreatedBy { get; init; }
+    public User CreatedBy { get; init; } = null!;
     public DateTime CreatedAt { get; init; }
 }

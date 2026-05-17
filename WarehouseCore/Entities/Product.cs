@@ -15,7 +15,8 @@ public class Product
     public bool IsActive { get; init; }
     public DateTime CreatedAt { get; init; }
     public DateTime? UpdatedAt { get; init; }
-    public enUnit Unit { get; init; }
+    public int UnitID { get; init; }
+    public enUnit Unit { get => (enUnit)UnitID; } 
     public int? CategoryID { get; init; }
     public Category? Category { get; init; }
 }

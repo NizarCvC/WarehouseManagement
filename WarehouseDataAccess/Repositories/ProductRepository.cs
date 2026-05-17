@@ -3,7 +3,6 @@ using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Configuration;
 using WarehouseCore.DTOs.CreateDTOs;
 using WarehouseCore.Entities;
-using WarehouseCore.enums;
 using WarehouseDataAccess.Interfaces;
 
 namespace WarehouseDataAccess.Repositories;
@@ -114,7 +113,7 @@ public class ProductRepository : IProductRepository
             {
                 while (await reader.ReadAsync(ct))
                 {
-                    Product product = MapReaderToProduct(reader); // تصحيح اسم المتغير
+                    Product product = MapReaderToProduct(reader);
                     products.Add(product);
                 }
 
@@ -241,7 +240,7 @@ public class ProductRepository : IProductRepository
             CreatedAt = reader.GetDateTime(reader.GetOrdinal("ProductCreatedAt")),
             UpdatedAt = reader.IsDBNull(reader.GetOrdinal("UpdatedAt")) ?
                 null : reader.GetDateTime(reader.GetOrdinal("UpdatedAt")),
-            Unit = (enUnit)reader.GetInt32(reader.GetOrdinal("UnitID")),
+            UnitID = reader.GetInt32(reader.GetOrdinal("UnitID")),
             CategoryID = reader.IsDBNull(reader.GetOrdinal("CategoryID")) ?
                  null : reader.GetInt32(reader.GetOrdinal("CategoryID")),
             Category = reader.IsDBNull(reader.GetOrdinal("CategoryID")) ? null : new Category()
