@@ -4,7 +4,7 @@ public class InvoiceItem
 {
     public int InvoiceItemID { get; init; }
     public int InvoiceID { get; init; }
-    public Invoice? Invoice { get; init; }
+    public Invoice Invoice { get; init; } = null!;
     public int ProductID { get; init; }
     public Product Product { get; init; } = null!;
     public decimal Quantity { get; init; }

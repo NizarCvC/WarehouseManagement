@@ -91,10 +91,56 @@ public class InvoiceRepository : IInvoiceRepository
         }
     }
 
-    // TODO: Need to implement this method to retrieve full invoice details including items, warehouse, and user info
     public async Task<Invoice?> GetInvoiceByIdAsync(int invoiceId, CancellationToken ct)
     {
-        throw new NotImplementedException();
+        string query = @"SELECT i.InvoiceID, i.InvoiceNumber, i.InvoiceDate, i.StatusID, i.Subtotal, i.DiscountAmount,
+                        i.TaxAmount, i.TotalAmount, i.Note, i.WarehouseID, i.CreatedByID, i.CreatedAt
+                        FROM Invoices i WHERE I.InvoiceID = @InvoiceID";
+
+        using (SqlConnection connection = new SqlConnection(_connectionString))
+        using (SqlCommand command = new SqlCommand(query, connection))
+        {
+            command.Parameters.Add(new SqlParameter("@InvoiceId", SqlDbType.Int) { Value = invoiceId });
+            await connection.OpenAsync(ct);
+
+            using (SqlDataReader reader = await command.ExecuteReaderAsync(ct))
+            {
+                if (await reader.ReadAsync(ct))
+                {
+                    List<InvoiceItem> invoiceItems = await GetInvoiceItemsByInvoiceIdAsync(invoiceId, ct);
+                    return MapReaderToInvoice(reader, invoiceItems);
+                }
+                else
+                    return null;
+            }
+        }
+    }
+
+    private async Task<List<InvoiceItem>> GetInvoiceItemsByInvoiceIdAsync(int invoiceId, CancellationToken ct)
+    {
+        List<InvoiceItem> invoiceItems = new List<InvoiceItem>();
+
+        string query = @"SELECT it.InvoiceItemID, it.InvoiceID, it.ProductID, it.Quantity, it.UnitPrice,
+                        it.DiscountAmount, it.TaxAmount, it.TotalAmount FROM InvoiceItems it
+                        WHERE it.InvoiceID = @InvoiceID";
+
+        using (SqlConnection connection = new SqlConnection(_connectionString))
+        using (SqlCommand command = new SqlCommand(query, connection))
+        {
+            command.Parameters.Add(new SqlParameter("@InvoiceId", SqlDbType.Int) { Value = invoiceId });
+            await connection.OpenAsync(ct);
+
+            using (SqlDataReader reader = await command.ExecuteReaderAsync(ct))
+            {
+                while (await reader.ReadAsync(ct))
+                {
+                    InvoiceItem invoiceItem = MapReaderToInvoiceItem(reader);
+                    invoiceItems.Add(invoiceItem);
+                }
+
+                return invoiceItems;
+            }
+        }
     }
 
     public async Task<List<InvoiceSummaryDto>> GetCustomerInvoicesAsync(int customerId, CancellationToken ct, int page = 1, int pageSize = 10)
@@ -275,7 +321,7 @@ public class InvoiceRepository : IInvoiceRepository
             int rowsAffected = await command.ExecuteNonQueryAsync(ct);
 
             return rowsAffected > 0;
-        }                
+        }
     }
 
     private InvoiceSummaryDto MapReaderToInvoiceSummary(SqlDataReader reader)
@@ -293,8 +339,7 @@ public class InvoiceRepository : IInvoiceRepository
         };
     }
 
-    // TODO: This method can be expanded to include more fields as needed
-    private Invoice MapReaderToInvoice(SqlDataReader reader)
+    private Invoice MapReaderToInvoice(SqlDataReader reader, List<InvoiceItem> items)
     {
         return new Invoice
         {
@@ -310,6 +355,21 @@ public class InvoiceRepository : IInvoiceRepository
             WarehouseID = reader.GetInt32("WarehouseID"),
             CreatedByID = reader.GetInt32("CreatedByID"),
             CreatedAt = reader.GetDateTime("CreatedAt"),
+            InvoiceItems = items
+        };
+    }
+
+    private InvoiceItem MapReaderToInvoiceItem(SqlDataReader reader)
+    {
+        return new InvoiceItem
+        {
+            InvoiceItemID = reader.GetInt32("InvoiceItemID"),
+            InvoiceID = reader.GetInt32("InvoiceID"),
+            ProductID = reader.GetInt32("ProductID"),
+            Quantity = reader.GetDecimal("Quantity"),
+            UnitPrice = reader.GetDecimal("UnitPrice"),
+            DiscountAmount = reader.GetDecimal("DiscountAmount"),
+            TaxAmount = reader.GetDecimal("TaxAmount")
         };
     }
 
