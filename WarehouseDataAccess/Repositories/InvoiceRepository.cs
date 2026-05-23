@@ -45,7 +45,7 @@ public class InvoiceRepository : IInvoiceRepository
             };
             command.Parameters.Add(itemsParam);
 
-            connection.Open();
+            await connection.OpenAsync(ct);
 
             object result = await command.ExecuteScalarAsync(ct);
             if (result != null && result != DBNull.Value)
@@ -64,7 +64,7 @@ public class InvoiceRepository : IInvoiceRepository
         {
             command.CommandType = CommandType.StoredProcedure;
             command.Parameters.Add(new SqlParameter("@InvoiceNumber", SqlDbType.VarChar) { Value = salesInvoiceDto.InvoiceNumber });
-            command.Parameters.Add(new SqlParameter("@SupplierID", SqlDbType.Int) { Value = salesInvoiceDto.CustomerID });
+            command.Parameters.Add(new SqlParameter("@CustomerID", SqlDbType.Int) { Value = salesInvoiceDto.CustomerID }); 
             command.Parameters.Add(new SqlParameter("@WarehouseID", SqlDbType.Int) { Value = salesInvoiceDto.WarehouseID });
             command.Parameters.Add(new SqlParameter("@CreatedByID", SqlDbType.Int) { Value = salesInvoiceDto.CreatedByID });
             command.Parameters.Add(new SqlParameter("@Subtotal", SqlDbType.Decimal) { Value = salesInvoiceDto.Subtotal });
@@ -81,7 +81,7 @@ public class InvoiceRepository : IInvoiceRepository
             };
             command.Parameters.Add(itemsParam);
 
-            connection.Open();
+            await connection.OpenAsync(ct); 
 
             object result = await command.ExecuteScalarAsync(ct);
             if (result != null && result != DBNull.Value)
@@ -95,7 +95,7 @@ public class InvoiceRepository : IInvoiceRepository
     {
         string query = @"SELECT i.InvoiceID, i.InvoiceNumber, i.InvoiceDate, i.StatusID, i.Subtotal, i.DiscountAmount,
                         i.TaxAmount, i.TotalAmount, i.Note, i.WarehouseID, i.CreatedByID, i.CreatedAt
-                        FROM Invoices i WHERE I.InvoiceID = @InvoiceID";
+                        FROM Invoices i WHERE i.InvoiceID = @InvoiceID";
 
         using (SqlConnection connection = new SqlConnection(_connectionString))
         using (SqlCommand command = new SqlCommand(query, connection))
@@ -110,8 +110,7 @@ public class InvoiceRepository : IInvoiceRepository
                     List<InvoiceItem> invoiceItems = await GetInvoiceItemsByInvoiceIdAsync(invoiceId, ct);
                     return MapReaderToInvoice(reader, invoiceItems);
                 }
-                else
-                    return null;
+                return null;
             }
         }
     }
@@ -119,10 +118,8 @@ public class InvoiceRepository : IInvoiceRepository
     private async Task<List<InvoiceItem>> GetInvoiceItemsByInvoiceIdAsync(int invoiceId, CancellationToken ct)
     {
         List<InvoiceItem> invoiceItems = new List<InvoiceItem>();
-
         string query = @"SELECT it.InvoiceItemID, it.InvoiceID, it.ProductID, it.Quantity, it.UnitPrice,
-                        it.DiscountAmount, it.TaxAmount, it.TotalAmount FROM InvoiceItems it
-                        WHERE it.InvoiceID = @InvoiceID";
+                        it.DiscountAmount, it.TaxAmount, it.TotalAmount FROM InvoiceItems it WHERE it.InvoiceID = @InvoiceID";
 
         using (SqlConnection connection = new SqlConnection(_connectionString))
         using (SqlCommand command = new SqlCommand(query, connection))
@@ -137,7 +134,6 @@ public class InvoiceRepository : IInvoiceRepository
                     InvoiceItem invoiceItem = MapReaderToInvoiceItem(reader);
                     invoiceItems.Add(invoiceItem);
                 }
-
                 return invoiceItems;
             }
         }
@@ -170,7 +166,6 @@ public class InvoiceRepository : IInvoiceRepository
                     InvoiceSummaryDto invoiceSummary = MapReaderToInvoiceSummary(reader);
                     invoiceSummaries.Add(invoiceSummary);
                 }
-
                 return invoiceSummaries;
             }
         }
@@ -183,7 +178,6 @@ public class InvoiceRepository : IInvoiceRepository
                         WHERE si.CustomerID = @CustomerId";
 
         int countNumber = 0;
-
         using (SqlConnection connection = new SqlConnection(_connectionString))
         using (SqlCommand command = new SqlCommand(query, connection))
         {
@@ -191,7 +185,6 @@ public class InvoiceRepository : IInvoiceRepository
             await connection.OpenAsync(ct);
 
             object result = await command.ExecuteScalarAsync(ct);
-
             if (result != null && result != DBNull.Value)
                 countNumber = Convert.ToInt32(result);
 
@@ -226,7 +219,6 @@ public class InvoiceRepository : IInvoiceRepository
                     InvoiceSummaryDto invoiceSummary = MapReaderToInvoiceSummary(reader);
                     invoiceSummaries.Add(invoiceSummary);
                 }
-
                 return invoiceSummaries;
             }
         }
@@ -239,7 +231,6 @@ public class InvoiceRepository : IInvoiceRepository
                         WHERE pi.SupplierID = @SupplierID";
 
         int countNumber = 0;
-
         using (SqlConnection connection = new SqlConnection(_connectionString))
         using (SqlCommand command = new SqlCommand(query, connection))
         {
@@ -247,7 +238,6 @@ public class InvoiceRepository : IInvoiceRepository
             await connection.OpenAsync(ct);
 
             object result = await command.ExecuteScalarAsync(ct);
-
             if (result != null && result != DBNull.Value)
                 countNumber = Convert.ToInt32(result);
 
@@ -279,7 +269,6 @@ public class InvoiceRepository : IInvoiceRepository
                     InvoiceSummaryDto invoiceSummary = MapReaderToInvoiceSummary(reader);
                     invoiceSummaries.Add(invoiceSummary);
                 }
-
                 return invoiceSummaries;
             }
         }
@@ -290,14 +279,12 @@ public class InvoiceRepository : IInvoiceRepository
         string query = @"SELECT COUNT(*) FROM vw_InvoicesSummary";
 
         int countNumber = 0;
-
         using (SqlConnection connection = new SqlConnection(_connectionString))
         using (SqlCommand command = new SqlCommand(query, connection))
         {
             await connection.OpenAsync(ct);
 
             object result = await command.ExecuteScalarAsync(ct);
-
             if (result != null && result != DBNull.Value)
                 countNumber = Convert.ToInt32(result);
 
@@ -307,9 +294,7 @@ public class InvoiceRepository : IInvoiceRepository
 
     public async Task<bool> UpdateInvoiceStatusAsync(int invoiceId, int newStatusId, CancellationToken ct)
     {
-        string query = @"UPDATE Invoices
-                        SET StatusID = @NewStatusId
-                        WHERE InvoiceID = @InvoiceId";
+        string query = @"UPDATE Invoices SET StatusID = @NewStatusId WHERE InvoiceID = @InvoiceId";
 
         using (SqlConnection connection = new SqlConnection(_connectionString))
         using (SqlCommand command = new SqlCommand(query, connection))
@@ -319,7 +304,6 @@ public class InvoiceRepository : IInvoiceRepository
             await connection.OpenAsync(ct);
 
             int rowsAffected = await command.ExecuteNonQueryAsync(ct);
-
             return rowsAffected > 0;
         }
     }
@@ -328,14 +312,14 @@ public class InvoiceRepository : IInvoiceRepository
     {
         return new InvoiceSummaryDto
         {
-            InvoiceID = reader.GetInt32("InvoiceID"),
-            InvoiceNumber = reader.GetString("InvoiceNumber"),
-            CreatedAt = reader.GetDateTime("CreatedAt"),
-            InvoiceType = reader.GetString("InvoiceType"),
-            PartyName = reader.GetString("PartyName"),
-            WarehouseName = reader.GetString("WarehouseName"),
-            NetTotal = reader.GetDecimal("NetTotal"),
-            StatusName = reader.GetString("StatusName")
+            InvoiceID = reader.GetInt32(reader.GetOrdinal("InvoiceID")),
+            InvoiceNumber = reader.GetString(reader.GetOrdinal("InvoiceNumber")),
+            CreatedAt = reader.GetDateTime(reader.GetOrdinal("CreatedAt")),
+            InvoiceType = reader.GetString(reader.GetOrdinal("InvoiceType")),
+            PartyName = reader.GetString(reader.GetOrdinal("PartyName")),
+            WarehouseName = reader.GetString(reader.GetOrdinal("WarehouseName")),
+            NetTotal = reader.GetDecimal(reader.GetOrdinal("NetTotal")),
+            StatusName = reader.GetString(reader.GetOrdinal("StatusName"))
         };
     }
 
@@ -343,18 +327,18 @@ public class InvoiceRepository : IInvoiceRepository
     {
         return new Invoice
         {
-            InvoiceID = reader.GetInt32("InvoiceID"),
-            InvoiceNumber = reader.GetString("InvoiceNumber"),
-            InvoiceDate = reader.GetDateTime("InvoiceDate"),
-            StatusID = reader.GetByte("StatusID"),
-            Subtotal = reader.GetDecimal("Subtotal"),
-            DiscountAmount = reader.GetDecimal("DiscountAmount"),
-            TaxAmount = reader.GetDecimal("TaxAmount"),
-            TotalAmount = reader.GetDecimal("TotalAmount"),
-            Note = reader.IsDBNull(reader.GetOrdinal("Note")) ? null : reader.GetString("Note"),
-            WarehouseID = reader.GetInt32("WarehouseID"),
-            CreatedByID = reader.GetInt32("CreatedByID"),
-            CreatedAt = reader.GetDateTime("CreatedAt"),
+            InvoiceID = reader.GetInt32(reader.GetOrdinal("InvoiceID")),
+            InvoiceNumber = reader.GetString(reader.GetOrdinal("InvoiceNumber")),
+            InvoiceDate = reader.GetDateTime(reader.GetOrdinal("InvoiceDate")),
+            StatusID = reader.GetByte(reader.GetOrdinal("StatusID")),
+            Subtotal = reader.GetDecimal(reader.GetOrdinal("Subtotal")),
+            DiscountAmount = reader.GetDecimal(reader.GetOrdinal("DiscountAmount")),
+            TaxAmount = reader.GetDecimal(reader.GetOrdinal("TaxAmount")),
+            TotalAmount = reader.GetDecimal(reader.GetOrdinal("TotalAmount")),
+            Note = reader.IsDBNull(reader.GetOrdinal("Note")) ? null : reader.GetString(reader.GetOrdinal("Note")),
+            WarehouseID = reader.GetInt32(reader.GetOrdinal("WarehouseID")),
+            CreatedByID = reader.GetInt32(reader.GetOrdinal("CreatedByID")),
+            CreatedAt = reader.GetDateTime(reader.GetOrdinal("CreatedAt")),
             InvoiceItems = items
         };
     }
@@ -363,13 +347,14 @@ public class InvoiceRepository : IInvoiceRepository
     {
         return new InvoiceItem
         {
-            InvoiceItemID = reader.GetInt32("InvoiceItemID"),
-            InvoiceID = reader.GetInt32("InvoiceID"),
-            ProductID = reader.GetInt32("ProductID"),
-            Quantity = reader.GetDecimal("Quantity"),
-            UnitPrice = reader.GetDecimal("UnitPrice"),
-            DiscountAmount = reader.GetDecimal("DiscountAmount"),
-            TaxAmount = reader.GetDecimal("TaxAmount")
+            InvoiceItemID = reader.GetInt32(reader.GetOrdinal("InvoiceItemID")),
+            InvoiceID = reader.GetInt32(reader.GetOrdinal("InvoiceID")),
+            ProductID = reader.GetInt32(reader.GetOrdinal("ProductID")),
+            Quantity = reader.GetDecimal(reader.GetOrdinal("Quantity")),
+            UnitPrice = reader.GetDecimal(reader.GetOrdinal("UnitPrice")),
+            DiscountAmount = reader.GetDecimal(reader.GetOrdinal("DiscountAmount")),
+            TaxAmount = reader.GetDecimal(reader.GetOrdinal("TaxAmount")),
+            TotalAmount = reader.GetDecimal(reader.GetOrdinal("TotalAmount"))
         };
     }
 
@@ -392,7 +377,6 @@ public class InvoiceRepository : IInvoiceRepository
             record.SetDecimal(2, item.UnitPrice);
             record.SetDecimal(3, item.DiscountAmount);
             record.SetDecimal(4, item.TaxAmount);
-
             yield return record;
         }
     }

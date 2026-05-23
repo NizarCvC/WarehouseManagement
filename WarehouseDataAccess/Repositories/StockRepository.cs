@@ -36,12 +36,12 @@ public class StockRepository : IStockRepository
 
             SqlParameter itemsParam = new SqlParameter("@Items", SqlDbType.Structured)
             {
-                TypeName = "dbo.InvoiceItemType",
+                TypeName = "dbo.TransferItemType",
                 Value = records
             };
             command.Parameters.Add(itemsParam);
 
-            connection.Open();
+            await connection.OpenAsync(ct); 
 
             object result = await command.ExecuteScalarAsync(ct);
             if (result != null && result != DBNull.Value)
@@ -54,13 +54,16 @@ public class StockRepository : IStockRepository
     public async Task<List<ItemLedgerDto>> GetItemLedgerAsync(int? productId, int? warehouseId, CancellationToken ct, int page = 1, int pageSize = 10)
     {
         List<ItemLedgerDto> itemLedgers = new List<ItemLedgerDto>();
-
         string query = ItemLedgerQuery(productId, warehouseId);
 
         using (SqlConnection connection = new SqlConnection(_connectionString))
         using (SqlCommand command = new SqlCommand(query, connection))
         {
             AddItemLedgerParameters(command, productId, warehouseId);
+            
+            command.Parameters.Add(new SqlParameter("@PageNumber", SqlDbType.Int) { Value = page });
+            command.Parameters.Add(new SqlParameter("@RowsPerPage", SqlDbType.Int) { Value = pageSize });
+
             await connection.OpenAsync(ct);
 
             using (SqlDataReader reader = await command.ExecuteReaderAsync(ct))
@@ -70,7 +73,6 @@ public class StockRepository : IStockRepository
                     ItemLedgerDto itemLedger = MapReaderToItemLedger(reader);
                     itemLedgers.Add(itemLedger);
                 }
-
                 return itemLedgers;
             }
         }
@@ -88,7 +90,6 @@ public class StockRepository : IStockRepository
             await connection.OpenAsync(ct);
 
             object result = await command.ExecuteScalarAsync(ct);
-
             if (result != null && result != DBNull.Value)
                 countNumber = Convert.ToInt32(result);
 
@@ -99,10 +100,8 @@ public class StockRepository : IStockRepository
     public async Task<List<CurrentStockDto>> GetProductStockAsync(int productId, CancellationToken ct)
     {
         List<CurrentStockDto> currentStocks = new List<CurrentStockDto>();
-
         string query = @"SELECT cs.ProductID, cs.ProductName, cs.WarehouseName, cs.Quantity, cs.UnitCost,
-                        cs.TotalValue FROM vw_CurrentStock cs
-                        WHERE cs.ProductID = @ProductId";
+                        cs.TotalValue FROM vw_CurrentStock cs WHERE cs.ProductID = @ProductId";
 
         using (SqlConnection connection = new SqlConnection(_connectionString))
         using (SqlCommand command = new SqlCommand(query, connection))
@@ -117,7 +116,6 @@ public class StockRepository : IStockRepository
                     CurrentStockDto currentStock = MapReaderToCurrentStock(reader);
                     currentStocks.Add(currentStock);
                 }
-
                 return currentStocks;
             }
         }
@@ -140,8 +138,8 @@ public class StockRepository : IStockRepository
             {
                 if (await reader.ReadAsync(ct))
                     return MapReaderToCurrentStock(reader);
-                else
-                    return null;
+                
+                return null;
             }
         }
     }
@@ -149,7 +147,6 @@ public class StockRepository : IStockRepository
     public async Task<List<CurrentStockDto>> GetWarehouseStockAsync(int warehouseId, CancellationToken ct, int page = 1, int pageSize = 10)
     {
         List<CurrentStockDto> currentStocks = new List<CurrentStockDto>();
-
         string query = @"SELECT cs.ProductID, cs.ProductName, cs.WarehouseName, cs.Quantity, cs.UnitCost, cs.TotalValue 
                         FROM vw_CurrentStock cs INNER JOIN Warehouses w ON cs.WarehouseName = w.Name
                         WHERE w.WarehouseID = @WarehouseID
@@ -172,7 +169,6 @@ public class StockRepository : IStockRepository
                     CurrentStockDto currentStock = MapReaderToCurrentStock(reader);
                     currentStocks.Add(currentStock);
                 }
-
                 return currentStocks;
             }
         }
@@ -185,7 +181,6 @@ public class StockRepository : IStockRepository
                         WHERE w.WarehouseID = @WarehouseID";
 
         int countNumber = 0;
-
         using (SqlConnection connection = new SqlConnection(_connectionString))
         using (SqlCommand command = new SqlCommand(query, connection))
         {
@@ -193,7 +188,6 @@ public class StockRepository : IStockRepository
             await connection.OpenAsync(ct);
 
             object result = await command.ExecuteScalarAsync(ct);
-
             if (result != null && result != DBNull.Value)
                 countNumber = Convert.ToInt32(result);
 
@@ -203,8 +197,7 @@ public class StockRepository : IStockRepository
 
     public async Task<bool> UpdateTransferStatusAsync(int transferId, int newStatusId, CancellationToken ct)
     {
-        string query = @"UPDATE StockTransfers SET StatusID = @NewStatusId
-                        WHERE StockTransferID = @StockTransferID";
+        string query = @"UPDATE StockTransfers SET StatusID = @NewStatusId WHERE StockTransferID = @StockTransferID";
 
         using (SqlConnection connection = new SqlConnection(_connectionString))
         using (SqlCommand command = new SqlCommand(query, connection))
@@ -214,7 +207,6 @@ public class StockRepository : IStockRepository
             await connection.OpenAsync(ct);
 
             int rowsAffected = await command.ExecuteNonQueryAsync(ct);
-
             return rowsAffected > 0;
         }
     }
@@ -223,12 +215,12 @@ public class StockRepository : IStockRepository
     {
         return new CurrentStockDto
         {
-            ProductID = reader.GetInt32("ProductID"),
-            ProductName = reader.GetString("ProductName"),
-            WarehouseName = reader.GetString("WarehouseName"),
-            Quantity = reader.GetDecimal("Quantity"),
-            UnitCost = reader.GetDecimal("UnitCost"),
-            TotalValue = reader.GetDecimal("TotalValue")
+            ProductID = reader.GetInt32(reader.GetOrdinal("ProductID")),
+            ProductName = reader.GetString(reader.GetOrdinal("ProductName")),
+            WarehouseName = reader.GetString(reader.GetOrdinal("WarehouseName")),
+            Quantity = reader.GetDecimal(reader.GetOrdinal("Quantity")),
+            UnitCost = reader.GetDecimal(reader.GetOrdinal("UnitCost")),
+            TotalValue = reader.GetDecimal(reader.GetOrdinal("TotalValue"))
         };
     }
 
@@ -236,16 +228,15 @@ public class StockRepository : IStockRepository
     {
         return new ItemLedgerDto
         {
-            InventoryTransactionID = reader.GetInt32("InventoryTransactionID"),
-            TransactionDate = reader.GetDateTime("TransactionDate"),
-            ProductName = reader.GetString("ProductName"),
-            WarehouseName = reader.GetString("WarehouseName"),
-            TransactionType = reader.GetString("TransactionType"),
-            MovementType = reader.GetString("MovementType"),
-            Quantity = reader.GetDecimal("Quantity"),
-            ReferenceDocument = reader.IsDBNull(reader.GetOrdinal("ReferenceDocument")) ?
-                null : reader.GetString("ReferenceDocument"),
-            CreatedByName = reader.GetString("CreatedByName")
+            InventoryTransactionID = reader.GetInt32(reader.GetOrdinal("InventoryTransactionID")),
+            TransactionDate = reader.GetDateTime(reader.GetOrdinal("TransactionDate")),
+            ProductName = reader.GetString(reader.GetOrdinal("ProductName")),
+            WarehouseName = reader.GetString(reader.GetOrdinal("WarehouseName")),
+            TransactionType = reader.GetString(reader.GetOrdinal("TransactionType")),
+            MovementType = reader.GetString(reader.GetOrdinal("MovementType")),
+            Quantity = reader.GetDecimal(reader.GetOrdinal("Quantity")),
+            ReferenceDocument = reader.IsDBNull(reader.GetOrdinal("ReferenceDocument")) ? null : reader.GetString(reader.GetOrdinal("ReferenceDocument")),
+            CreatedByName = reader.GetString(reader.GetOrdinal("CreatedByName"))
         };
     }
 
@@ -261,82 +252,62 @@ public class StockRepository : IStockRepository
             SqlDataRecord record = new SqlDataRecord(schema);
             record.SetInt32(0, item.ProductID);
             record.SetDecimal(1, item.Quantity);
-
             yield return record;
         }
     }
 
     private string ItemLedgerQuery(int? productId, int? warehouseId)
     {
+        string baseQuery;
         if (productId is null && warehouseId is null)
         {
-            return @"SELECT il.InventoryTransactionID, il.TransactionDate, il.ProductName, il.WarehouseName,
-                    il.TransactionType, il.MovementType, il.Quantity, il.ReferenceDocument,
-                    il.CreatedByName FROM vw_ItemLedger il";
+            baseQuery = @"SELECT il.InventoryTransactionID, il.TransactionDate, il.ProductName, il.WarehouseName,
+                    il.TransactionType, il.MovementType, il.Quantity, il.ReferenceDocument, il.CreatedByName FROM vw_ItemLedger il";
         }
         else if (productId is not null && warehouseId is null)
         {
-            return @"SELECT il.InventoryTransactionID, il.TransactionDate, il.ProductName, il.WarehouseName,
+            baseQuery = @"SELECT il.InventoryTransactionID, il.TransactionDate, il.ProductName, il.WarehouseName,
                     il.TransactionType, il.MovementType, il.Quantity, il.ReferenceDocument, il.CreatedByName 
                     FROM vw_ItemLedger il INNER JOIN InventoryTransactions it ON it.InventoryTransactionID = il.InventoryTransactionID
                     WHERE it.ProductID = @ProductID";
         }
         else if (productId is null && warehouseId is not null)
         {
-            return @"SELECT il.InventoryTransactionID, il.TransactionDate, il.ProductName, il.WarehouseName,
+            baseQuery = @"SELECT il.InventoryTransactionID, il.TransactionDate, il.ProductName, il.WarehouseName,
                     il.TransactionType, il.MovementType, il.Quantity, il.ReferenceDocument, il.CreatedByName 
                     FROM vw_ItemLedger il INNER JOIN InventoryTransactions it ON it.InventoryTransactionID = il.InventoryTransactionID
                     WHERE it.WarehouseID = @WarehouseID";
         }
         else
         {
-            return @"SELECT il.InventoryTransactionID, il.TransactionDate, il.ProductName, il.WarehouseName,
+            baseQuery = @"SELECT il.InventoryTransactionID, il.TransactionDate, il.ProductName, il.WarehouseName,
                     il.TransactionType, il.MovementType, il.Quantity, il.ReferenceDocument, il.CreatedByName 
                     FROM vw_ItemLedger il INNER JOIN InventoryTransactions it ON it.InventoryTransactionID = il.InventoryTransactionID
                     WHERE it.WarehouseID = @WarehouseID AND it.ProductID = @ProductID";
         }
+
+        return baseQuery + @" ORDER BY il.TransactionDate DESC 
+                             OFFSET (@PageNumber - 1) * @RowsPerPage ROWS 
+                             FETCH NEXT @RowsPerPage ROWS ONLY;";
     }
 
     private string ItemLedgerCountQuery(int? productId, int? warehouseId)
     {
-        if (productId is null && warehouseId is null)
-        {
+        if (productId is null && warehouseId is null) 
             return @"SELECT COUNT(*) FROM vw_ItemLedger il";
-        }
-        else if (productId is not null && warehouseId is null)
-        {
-            return @"SELECT COUNT(*) FROM vw_ItemLedger il INNER JOIN InventoryTransactions it
-                    ON it.InventoryTransactionID = il.InventoryTransactionID
-                    WHERE it.ProductID = @ProductID";
-        }
-        else if (productId is null && warehouseId is not null)
-        {
-            return @"SELECT COUNT(*) FROM vw_ItemLedger il INNER JOIN InventoryTransactions it
-                    ON it.InventoryTransactionID = il.InventoryTransactionID
-                    WHERE it.WarehouseID = @WarehouseID";
-        }
-        else
-        {
-            return @"SELECT COUNT(*) FROM vw_ItemLedger il INNER JOIN InventoryTransactions it 
-                    ON it.InventoryTransactionID = il.InventoryTransactionID
-                    WHERE it.WarehouseID = @WarehouseID AND it.ProductID = @ProductID";
-        }
+        
+        if (productId is not null && warehouseId is null)
+            return @"SELECT COUNT(*) FROM vw_ItemLedger il INNER JOIN InventoryTransactions it ON it.InventoryTransactionID = il.InventoryTransactionID WHERE it.ProductID = @ProductID";
+        
+        if (productId is null && warehouseId is not null)
+            return @"SELECT COUNT(*) FROM vw_ItemLedger il INNER JOIN InventoryTransactions it ON it.InventoryTransactionID = il.InventoryTransactionID WHERE it.WarehouseID = @WarehouseID";
+        
+        return @"SELECT COUNT(*) FROM vw_ItemLedger il INNER JOIN InventoryTransactions it ON it.InventoryTransactionID = il.InventoryTransactionID WHERE it.WarehouseID = @WarehouseID AND it.ProductID = @ProductID";
     }
 
     private void AddItemLedgerParameters(SqlCommand command, int? productId, int? warehouseId)
     {
-        if (productId is not null && warehouseId is not null)
-        {
-            command.Parameters.Add(new SqlParameter("@ProductId", SqlDbType.Int) { Value = productId });
-            command.Parameters.Add(new SqlParameter("@WarehouseID", SqlDbType.Int) { Value = warehouseId });
-        }
-        else if (productId is not null && warehouseId is null)
-        {
-            command.Parameters.Add(new SqlParameter("@ProductId", SqlDbType.Int) { Value = productId });
-        }
-        else if (productId is null && warehouseId is not null)
-        {
-            command.Parameters.Add(new SqlParameter("@WarehouseID", SqlDbType.Int) { Value = warehouseId });
-        }
+        if (productId is not null) command.Parameters.Add(new SqlParameter("@ProductID", SqlDbType.Int) { Value = productId });
+        if (warehouseId is not null) command.Parameters.Add(new SqlParameter("@WarehouseID", SqlDbType.Int) { Value = warehouseId });
     }
 }
