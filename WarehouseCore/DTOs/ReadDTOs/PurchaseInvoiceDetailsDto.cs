@@ -1,3 +1,5 @@
+using WarehouseCore.Entities;
+
 namespace WarehouseCore.DTOs.ReadDTOs;
 
 public class PurchaseInvoiceDetailsDto
@@ -15,4 +17,29 @@ public class PurchaseInvoiceDetailsDto
     public required string SupplierName { get; set; }
     public required string WarehouseName { get; set; }
     public ICollection<InvoiceItemDto> Items { get; set; } = [];
+
+    public static PurchaseInvoiceDetailsDto FromEntity(PurchaseInvoice invoice)
+    {
+        return new PurchaseInvoiceDetailsDto
+        {
+            InvoiceId = invoice.InvoiceID,
+            InvoiceNumber = invoice.Invoice.InvoiceNumber,
+            CreatedAt = invoice.Invoice.CreatedAt,
+            Status = invoice.Invoice.invoiceStatus.ToString(),
+            Subtotal = invoice.Invoice.Subtotal,
+            DiscountAmount = invoice.Invoice.DiscountAmount,
+            TaxAmount = invoice.Invoice.TaxAmount,
+            TotalAmount = invoice.Invoice.TotalAmount,
+            Note = invoice.Invoice.Note,
+            SupplierId = invoice.SupplierID,
+            SupplierName = invoice.Supplier.Name,
+            WarehouseName = invoice.Invoice.Warehouse.Name,
+            Items = invoice.Invoice.InvoiceItems.Select(InvoiceItemDto.FromEntity).ToList()
+        };
+    }
+
+    public static List<PurchaseInvoiceDetailsDto> FromEntities(List<PurchaseInvoice> invoices)
+    {
+        return invoices.Select(FromEntity).ToList();
+    }
 }

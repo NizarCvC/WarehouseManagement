@@ -94,8 +94,8 @@ public class InvoiceRepository : IInvoiceRepository
     public async Task<Invoice?> GetInvoiceByIdAsync(int invoiceId, CancellationToken ct)
     {
         string query = @"SELECT i.InvoiceID, i.InvoiceNumber, i.InvoiceDate, i.StatusID, i.Subtotal, i.DiscountAmount,
-                        i.TaxAmount, i.TotalAmount, i.Note, i.WarehouseID, i.CreatedByID, i.CreatedAt
-                        FROM Invoices i WHERE i.InvoiceID = @InvoiceID";
+                        i.TaxAmount, i.TotalAmount, i.Note, i.WarehouseID, i.CreatedByID, i.CreatedAt AS InvoiceCreatedAt,
+                        FROM Invoices i WHERE I.InvoiceID = @InvoiceID";
 
         using (SqlConnection connection = new SqlConnection(_connectionString))
         using (SqlCommand command = new SqlCommand(query, connection))
@@ -110,6 +110,69 @@ public class InvoiceRepository : IInvoiceRepository
                     List<InvoiceItem> invoiceItems = await GetInvoiceItemsByInvoiceIdAsync(invoiceId, ct);
                     return MapReaderToInvoice(reader, invoiceItems);
                 }
+                else
+                    return null;
+            }
+        }
+    }
+
+    public async Task<PurchaseInvoice?> GetPurchaseInvoiceByIdAsync(int invoiceId, CancellationToken ct)
+    {
+        string query = @"SELECT pi.PurchaseInvoiceID, pi.InvoiceID, pi.SupplierID,
+                        i.InvoiceNumber, i.InvoiceDate, i.StatusID, i.Subtotal, i.DiscountAmount, i.TaxAmount,
+                        i.TotalAmount, i.Note, i.WarehouseID, i.CreatedByID, i.CreatedAt AS InvoiceCreatedAt,
+                        s.Name AS SupplierName, s.Phone, s.Email, s.Address, s.TaxNumber, s.IsActive AS IsActiveSupplier, s.CreatedAt AS SupplierCreatedAt,
+                        w.Name AS WarehouseName, w.Code, w.[Location], w.IsActive AS IsActiveWarehouse, w.CreatedAt AS WarehouseCreatedAt
+                        FROM PurchaseInvoices pi 
+                        INNER JOIN Invoices i ON pi.InvoiceID = i.InvoiceID 
+                        INNER JOIN Suppliers s ON pi.SupplierID = s.SupplierID
+                        INNER JOIN Warehouses w ON i.WarehouseID = w.WarehouseID
+                        WHERE i.InvoiceID = @InvoiceID";
+
+        using (SqlConnection connection = new SqlConnection(_connectionString))
+        using (SqlCommand command = new SqlCommand(query, connection))
+        {
+            command.Parameters.Add(new SqlParameter("@InvoiceId", SqlDbType.Int) { Value = invoiceId });
+            await connection.OpenAsync(ct);
+
+            using (SqlDataReader reader = await command.ExecuteReaderAsync(ct))
+            {
+                if (await reader.ReadAsync(ct))
+                {
+                    List<InvoiceItem> invoiceItems = await GetInvoiceItemsByInvoiceIdAsync(invoiceId, ct);
+                    return MapReaderToPurchaseInvoice(reader, invoiceItems);
+                }
+                return null;
+            }
+        }
+    }
+
+    public async Task<SalesInvoice?> GetSalesInvoiceByIdAsync(int invoiceId, CancellationToken ct) {
+
+        string query = @"SELECT si.SalesInvoiceID, si.InvoiceID, si.CustomerID,
+                        i.InvoiceNumber, i.InvoiceDate, i.StatusID, i.Subtotal, i.DiscountAmount, i.TaxAmount,
+                        i.TotalAmount, i.Note, i.WarehouseID, i.CreatedByID, i.CreatedAt AS InvoiceCreatedAt,
+                        c.Name AS CustomerName, c.Email, c.Phone, c.Address, c.IsActive AS IsActiveCustomer, c.CreatedAt AS CustomerCreatedAt, 
+                        w.Name AS WarehouseName, w.Code, w.[Location], w.IsActive AS IsActiveWarehouse, w.CreatedAt AS WarehouseCreatedAt
+                        FROM SalesInvoices si
+                        INNER JOIN Invoices i ON si.InvoiceID = i.InvoiceID 
+                        INNER JOIN Customers c ON si.CustomerID = c.CustomerID
+                        INNER JOIN Warehouses w ON i.WarehouseID = w.WarehouseID
+                        WHERE i.InvoiceID = @InvoiceID";
+
+        using (SqlConnection connection = new SqlConnection(_connectionString))
+        using (SqlCommand command = new SqlCommand(query, connection))
+        {
+            command.Parameters.Add(new SqlParameter("@InvoiceId", SqlDbType.Int) { Value = invoiceId });
+            await connection.OpenAsync(ct);
+
+            using (SqlDataReader reader = await command.ExecuteReaderAsync(ct))
+            {
+                if (await reader.ReadAsync(ct))
+                {
+                    List<InvoiceItem> invoiceItems = await GetInvoiceItemsByInvoiceIdAsync(invoiceId, ct);
+                    return MapReaderToSalesInvoice(reader, invoiceItems);
+                }
                 return null;
             }
         }
@@ -118,8 +181,16 @@ public class InvoiceRepository : IInvoiceRepository
     private async Task<List<InvoiceItem>> GetInvoiceItemsByInvoiceIdAsync(int invoiceId, CancellationToken ct)
     {
         List<InvoiceItem> invoiceItems = new List<InvoiceItem>();
+
         string query = @"SELECT it.InvoiceItemID, it.InvoiceID, it.ProductID, it.Quantity, it.UnitPrice,
-                        it.DiscountAmount, it.TaxAmount, it.TotalAmount FROM InvoiceItems it WHERE it.InvoiceID = @InvoiceID";
+                            it.DiscountAmount, it.TaxAmount, it.TotalAmount, 
+                            p.Name AS ProductName, p.Sku, p.Barcode, p.Description, p.PurchasePrice,
+                            p.SalePrice, p.MinStock, p.IsActive, p.CreatedAt AS ProductCreatedAt, p.UpdatedAt, p.UnitID,
+                            p.CategoryID, c.Name AS CategoryName, c.CreatedAt AS CategoryCreatedAt, c.ParentID
+                        FROM InvoiceItems it 
+                        INNER JOIN Products p ON it.ProductID = p.ProductID
+                        LEFT JOIN Categories c ON p.CategoryID = c.CategoryID
+                        WHERE it.InvoiceID = @InvoiceID";
 
         using (SqlConnection connection = new SqlConnection(_connectionString))
         using (SqlCommand command = new SqlCommand(query, connection))
@@ -323,6 +394,72 @@ public class InvoiceRepository : IInvoiceRepository
         };
     }
 
+    private Customer MapReaderToCustomer(SqlDataReader reader)
+    {
+        return new Customer()
+        {
+            CustomerID = reader.GetInt32(reader.GetOrdinal("CustomerID")),
+            Name = reader.GetString(reader.GetOrdinal("CustomerName")),
+            Phone = reader.GetString(reader.GetOrdinal("Phone")),
+            Email = reader.GetString(reader.GetOrdinal("Email")),
+            Address = reader.GetString(reader.GetOrdinal("Address")),
+            IsActive = reader.GetBoolean(reader.GetOrdinal("IsActiveCustomer")),
+            CreatedAt = reader.GetDateTime(reader.GetOrdinal("CustomerCreatedAt"))
+        };
+    }
+
+    private Supplier MapReaderToSupplier(SqlDataReader reader)
+    {
+        return new Supplier()
+        {
+            SupplierID = reader.GetInt32(reader.GetOrdinal("SupplierID")),
+            Name = reader.GetString(reader.GetOrdinal("SupplierName")),
+            Phone = reader.GetString(reader.GetOrdinal("Phone")),
+            Email = reader.GetString(reader.GetOrdinal("Email")),
+            Address = reader.GetString(reader.GetOrdinal("Address")),
+            TaxNumber = reader.GetString(reader.GetOrdinal("TaxNumber")),
+            IsActive = reader.GetBoolean(reader.GetOrdinal("IsActiveSupplier")),
+            CreatedAt = reader.GetDateTime(reader.GetOrdinal("SupplierCreatedAt"))
+        };
+    }
+
+    private Warehouse MapReaderToWarehouse(SqlDataReader reader)
+    {
+        return new Warehouse()
+        {
+            WarehouseID = reader.GetInt32(reader.GetOrdinal("WarehouseID")),
+            Name = reader.GetString(reader.GetOrdinal("WarehouseName")),
+            Code = reader.GetString(reader.GetOrdinal("Code")),
+            Location = reader.GetString(reader.GetOrdinal("Location")),
+            IsActive = reader.GetBoolean(reader.GetOrdinal("IsActiveWarehouse")),
+            CreatedAt = reader.GetDateTime(reader.GetOrdinal("WarehouseCreatedAt")),
+        };
+    }
+
+    private PurchaseInvoice MapReaderToPurchaseInvoice(SqlDataReader reader, List<InvoiceItem> items)
+    {
+        return new PurchaseInvoice()
+        {
+            PurchaseInvoiceID = reader.GetInt32(reader.GetOrdinal("PurchaseInvoiceID")),
+            InvoiceID = reader.GetInt32(reader.GetOrdinal("InvoiceID")),
+            SupplierID = reader.GetInt32(reader.GetOrdinal("SupplierID")),
+            Supplier = MapReaderToSupplier(reader),
+            Invoice = MapReaderToInvoice(reader, items)
+        };
+    }
+
+    private SalesInvoice MapReaderToSalesInvoice(SqlDataReader reader, List<InvoiceItem> items)
+    {
+        return new SalesInvoice()
+        {
+            SalesInvoiceID = reader.GetInt32(reader.GetOrdinal("SalesInvoiceID")),
+            InvoiceID = reader.GetInt32(reader.GetOrdinal("InvoiceID")),
+            CustomerID = reader.GetInt32(reader.GetOrdinal("CustomerID")),
+            Customer = MapReaderToCustomer(reader),
+            Invoice = MapReaderToInvoice(reader, items)
+        };
+    }
+
     private Invoice MapReaderToInvoice(SqlDataReader reader, List<InvoiceItem> items)
     {
         return new Invoice
@@ -338,8 +475,9 @@ public class InvoiceRepository : IInvoiceRepository
             Note = reader.IsDBNull(reader.GetOrdinal("Note")) ? null : reader.GetString(reader.GetOrdinal("Note")),
             WarehouseID = reader.GetInt32(reader.GetOrdinal("WarehouseID")),
             CreatedByID = reader.GetInt32(reader.GetOrdinal("CreatedByID")),
-            CreatedAt = reader.GetDateTime(reader.GetOrdinal("CreatedAt")),
-            InvoiceItems = items
+            CreatedAt = reader.GetDateTime(reader.GetOrdinal("InvoiceCreatedAt")),
+            InvoiceItems = items,
+            Warehouse = MapReaderToWarehouse(reader)
         };
     }
 
@@ -354,7 +492,37 @@ public class InvoiceRepository : IInvoiceRepository
             UnitPrice = reader.GetDecimal(reader.GetOrdinal("UnitPrice")),
             DiscountAmount = reader.GetDecimal(reader.GetOrdinal("DiscountAmount")),
             TaxAmount = reader.GetDecimal(reader.GetOrdinal("TaxAmount")),
-            TotalAmount = reader.GetDecimal(reader.GetOrdinal("TotalAmount"))
+            TotalAmount = reader.GetDecimal(reader.GetOrdinal("TotalAmount")),
+            Product = MapReaderToProduct(reader)
+        };
+    }
+
+    private Product MapReaderToProduct(SqlDataReader reader)
+    {
+        return new Product()
+        {
+            ProductID = reader.GetInt32(reader.GetOrdinal("ProductID")),
+            Name = reader.GetString(reader.GetOrdinal("ProductName")),
+            Sku = reader.GetString(reader.GetOrdinal("Sku")),
+            Barcode = reader.GetString(reader.GetOrdinal("Barcode")),
+            Description = reader.IsDBNull(reader.GetOrdinal("Description")) ?
+                null : reader.GetString(reader.GetOrdinal("Description")),
+            PurchasePrice = reader.GetDecimal(reader.GetOrdinal("PurchasePrice")),
+            SalePrice = reader.GetDecimal(reader.GetOrdinal("SalePrice")),
+            MinStock = reader.GetInt32(reader.GetOrdinal("MinStock")),
+            IsActive = reader.GetBoolean(reader.GetOrdinal("IsActive")),
+            CreatedAt = reader.GetDateTime(reader.GetOrdinal("ProductCreatedAt")),
+            UpdatedAt = reader.IsDBNull(reader.GetOrdinal("UpdatedAt")) ?
+                null : reader.GetDateTime(reader.GetOrdinal("UpdatedAt")),
+            UnitID = reader.GetInt32(reader.GetOrdinal("UnitID")),
+            CategoryID = reader.IsDBNull(reader.GetOrdinal("CategoryID")) ?
+                 null : reader.GetInt32(reader.GetOrdinal("CategoryID")),
+            Category = reader.IsDBNull(reader.GetOrdinal("CategoryID")) ? null : new Category()
+            {
+                CategoryID = reader.GetInt32(reader.GetOrdinal("CategoryID")),
+                Name = reader.GetString(reader.GetOrdinal("CategoryName")),
+                CreatedAt = reader.GetDateTime(reader.GetOrdinal("CategoryCreatedAt")),
+            }
         };
     }
 

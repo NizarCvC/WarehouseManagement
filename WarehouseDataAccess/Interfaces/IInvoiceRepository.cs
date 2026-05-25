@@ -15,5 +15,7 @@ public interface IInvoiceRepository
     Task<int> GetCustomerInvoicesCountAsync(int customerId, CancellationToken ct);
     Task<List<InvoiceSummaryDto>> GetSupplierInvoicesAsync(int supplierId, CancellationToken ct, int page = 1, int pageSize = 10);
     Task<int> GetSupplierInvoicesCountAsync(int supplierId, CancellationToken ct);
+    Task<SalesInvoice?> GetSalesInvoiceByIdAsync(int invoiceId, CancellationToken ct);
+    Task<PurchaseInvoice?> GetPurchaseInvoiceByIdAsync(int invoiceId, CancellationToken ct);
     Task<Invoice?> GetInvoiceByIdAsync(int invoiceId, CancellationToken ct);
 }

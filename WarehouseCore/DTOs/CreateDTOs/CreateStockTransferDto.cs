@@ -1,6 +1,6 @@
 namespace WarehouseCore.DTOs.CreateDTOs;
 
-public class CreateStockTransferDto
+public class CreateStockTransferDto // TODO: Validate properties
 {
     public required string TransferNumber { get; set; }
     public required int SourceWarehouseID { get; set; }

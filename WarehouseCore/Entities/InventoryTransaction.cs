@@ -1,20 +1,22 @@
+using WarehouseCore.enums;
+
 namespace WarehouseCore.Entities;
 
 public class InventoryTransaction
 {
-    public int InventoryTransactionID { get; init; }
-    public bool IsInward { get; init; }
-    public decimal Quantity { get; init; }
-    public decimal UnitCost { get; init; }
-    public int ReferenceID { get; init; }
-    public byte ReferenceTypeID { get; init; }
-    public ReferenceType ReferenceType { get; init; } = null!;
+    public required int InventoryTransactionID { get; init; }
+    public required bool IsInward { get; init; }
+    public required decimal Quantity { get; init; }
+    public required decimal UnitCost { get; init; }
+    public required int ReferenceID { get; init; }
+    public required byte ReferenceTypeID { get; init; }
+    public enReferenceType ReferenceType { get => (enReferenceType)ReferenceTypeID; }
     public string? Note { get; init; }
-    public int ProductID { get; init; }
+    public required int ProductID { get; init; }
     public Product Product { get; init; } = null!;
-    public int WarehouseID { get; init; }
+    public required int WarehouseID { get; init; }
     public Warehouse Warehouse { get; init; } = null!;
-    public int CreatedByID { get; init; }
+    public required int CreatedByID { get; init; }
     public User CreatedBy { get; init; } = null!;
-    public DateTime CreatedAt { get; init; }
+    public required DateTime CreatedAt { get; init; }
 }

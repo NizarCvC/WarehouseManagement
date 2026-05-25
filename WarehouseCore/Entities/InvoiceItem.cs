@@ -2,14 +2,14 @@ namespace WarehouseCore.Entities;
 
 public class InvoiceItem
 {
-    public int InvoiceItemID { get; init; }
-    public int InvoiceID { get; init; }
+    public required int InvoiceItemID { get; init; }
+    public required int InvoiceID { get; init; }
     public Invoice Invoice { get; init; } = null!;
-    public int ProductID { get; init; }
+    public required int ProductID { get; init; }
     public Product Product { get; init; } = null!;
-    public decimal Quantity { get; init; }
-    public decimal UnitPrice { get; init; }
-    public decimal DiscountAmount { get; init; }
-    public decimal TaxAmount { get; init; }
-    public decimal TotalAmount { get; init; }
+    public required decimal Quantity { get; init; }
+    public required decimal UnitPrice { get; init; }
+    public required decimal DiscountAmount { get; init; }
+    public required decimal TaxAmount { get; init; }
+    public required decimal TotalAmount { get; init; }
 }
