@@ -1,3 +1,4 @@
+using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Logging;
 using WarehouseCore.DTOs.CreateDTOs;
 using WarehouseCore.DTOs.ReadDTOs;
@@ -9,17 +10,78 @@ using WarehouseServices.Interfaces;
 
 namespace WarehouseServices.Services;
 
-public class InvoiceService(IInvoiceRepository invoiceRepository, 
+public class InvoiceService(IInvoiceRepository invoiceRepository, IWarehouseService warehouseService,
+    ICustomerService customerService, ISupplierService supplierService,
     ILogger<InvoiceService> logger) : IInvoiceService
 {
     public async Task<int> CreatePurchaseInvoiceAsync(CreatePurchaseInvoiceDto purchaseInvoiceDto, CancellationToken ct)
     {
-        throw new NotImplementedException();
+        if (!CrossFinancialValidation(purchaseInvoiceDto))
+        {
+            throw new BadRequestException("The calculated subtotal, tax amount, or discount amount does not match the provided values.");
+        }
+
+        WarehouseDto warehouseDto = await warehouseService.GetWarehouseByIdAsync(purchaseInvoiceDto.WarehouseID, ct);
+
+        if (!warehouseDto.IsActive)
+        {
+            throw new BadRequestException($"The warehouse ID: {purchaseInvoiceDto.WarehouseID} is not active.");
+        }
+
+        SupplierDto supplierDto = await supplierService.GetSupplierByIdAsync(purchaseInvoiceDto.SupplierID, ct);
+
+        if (!supplierDto.IsActive)
+        {
+            throw new BadRequestException($"The supplier ID: {purchaseInvoiceDto.SupplierID} is not active.");
+        }
+
+        try
+        {
+            int newInvoiceId = await invoiceRepository.CreatePurchaseInvoiceAsync(purchaseInvoiceDto, ct);
+            logger.LogInformation("The purchase invoice created for supplier ID: {SupplierId} and warehouse ID: {WarehouseId}", purchaseInvoiceDto.SupplierID, purchaseInvoiceDto.WarehouseID);
+            return newInvoiceId;
+        }
+        catch (SqlException ex) when (ex.Number == 50001)
+        {
+            throw new BadRequestException(ex.Message);
+        }
     }
 
     public async Task<int> CreateSalesInvoiceAsync(CreateSalesInvoiceDto salesInvoiceDto, CancellationToken ct)
     {
-        throw new NotImplementedException();
+        if (!CrossFinancialValidation(salesInvoiceDto))
+        {
+            throw new BadRequestException("The calculated subtotal, tax amount, or discount amount does not match the provided values.");
+        }
+
+        WarehouseDto warehouseDto = await warehouseService.GetWarehouseByIdAsync(salesInvoiceDto.WarehouseID, ct);
+
+        if (!warehouseDto.IsActive)
+        {
+            throw new BadRequestException($"The warehouse ID: {salesInvoiceDto.WarehouseID} is not active.");
+        }
+
+        CustomerDto customerDto = await customerService.GetCustomerByIdAsync(salesInvoiceDto.CustomerID, ct);
+
+        if (!customerDto.IsActive)
+        {
+            throw new BadRequestException($"The customer ID: {salesInvoiceDto.CustomerID} is not active.");
+        }
+
+        try
+        {
+            int newInvoiceId = await invoiceRepository.CreateSalesInvoiceAsync(salesInvoiceDto, ct);
+            logger.LogInformation("The sales invoice created for customer ID: {CustomerId} and warehouse ID: {WarehouseId}", salesInvoiceDto.CustomerID, salesInvoiceDto.WarehouseID);
+            return newInvoiceId;
+        }
+        catch (SqlException ex) when (ex.Number == 50001)
+        {
+            throw new BadRequestException(ex.Message);
+        }
+        catch (SqlException ex) when (ex.Number == 50002)
+        {
+            throw new BadRequestException(ex.Message);
+        }
     }
 
     public async Task<List<InvoiceSummaryDto>> GetCustomerInvoicesAsync(int customerId, CancellationToken ct, int page = 1, int pageSize = 10)
@@ -97,5 +159,16 @@ public class InvoiceService(IInvoiceRepository invoiceRepository,
             throw new NotFoundException($"The invoice status ID: {newStatusId} not exists.");
 
         await invoiceRepository.UpdateInvoiceStatusAsync(invoiceId, newStatusId, ct);
+    }
+
+    private bool CrossFinancialValidation(CreateInvoiceDto createInvoiceDto) 
+    {
+        decimal calcSubtotal = createInvoiceDto.Items.Sum(e => e.UnitPrice * e.Quantity);
+        decimal calcTaxAmount = createInvoiceDto.Items.Sum(e => e.TaxAmount);
+        decimal calcDiscountAmount = createInvoiceDto.Items.Sum(e => e.DiscountAmount);
+
+        return calcSubtotal == createInvoiceDto.Subtotal 
+            && calcTaxAmount == createInvoiceDto.TaxAmount 
+            && calcDiscountAmount == createInvoiceDto.DiscountAmount;
     }
 }

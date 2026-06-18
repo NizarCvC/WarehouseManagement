@@ -19,6 +19,7 @@ public class GlobalExceptionHandler(IProblemDetailsService problemDetailsService
             ConflictException => StatusCodes.Status409Conflict,
             UnauthorizedException => StatusCodes.Status401Unauthorized,
             SecurityTokenException => StatusCodes.Status401Unauthorized,
+            BadRequestException => StatusCodes.Status400BadRequest,
             SqlException => StatusCodes.Status500InternalServerError, 
             _ => StatusCodes.Status500InternalServerError
         };
