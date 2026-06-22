@@ -2,6 +2,8 @@ using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Logging;
 using WarehouseCore.DTOs.CreateDTOs;
 using WarehouseCore.DTOs.ReadDTOs;
+using WarehouseCore.Entities;
+using WarehouseCore.enums;
 using WarehouseDataAccess.Interfaces;
 using WarehouseServices.Exceptions;
 using WarehouseServices.Interfaces;
@@ -14,6 +16,11 @@ public class StockService(IStockRepository stockRepository,
 {
     public async Task<int> CreateStockTransferAsync(CreateStockTransferDto transfer, CancellationToken ct)
     {
+        if (transfer.SourceWarehouseID == transfer.DestinationWarehouseID)
+        {
+            throw new BadRequestException("Source and destination warehouse IDs cannot be the same.");
+        }
+
         WarehouseDto sourceWarehouse = await warehouseService.GetWarehouseByIdAsync(transfer.SourceWarehouseID, ct);
 
         if (!sourceWarehouse.IsActive)
@@ -26,11 +33,6 @@ public class StockService(IStockRepository stockRepository,
         if (!destinationWarehouse.IsActive)
         {
             throw new BadRequestException($"The destination warehouse ID: {transfer.DestinationWarehouseID} is not active.");
-        }
-
-        if (transfer.SourceWarehouseID == transfer.DestinationWarehouseID)
-        {
-            throw new BadRequestException("Source and destination warehouse IDs cannot be the same.");
         }
 
         try
@@ -123,7 +125,19 @@ public class StockService(IStockRepository stockRepository,
 
     public async Task UpdateTransferStatusAsync(int transferId, int newStatusId, CancellationToken ct)
     {
-        
+        StockTransfer? transfer = await stockRepository.GetStockTransferByIdAsync(transferId, ct);
+
+        if (transfer is null)
+            throw new NotFoundException($"The stock transfer ID: {transferId} not exists.");
+
+        if (transfer.TransferStatus == enTransferStatus.Completed || transfer.TransferStatus == enTransferStatus.Cancelled)
+            throw new BadRequestException($"The stock transfer ID: {transferId} is already completed or cancelled and cannot be updated.");
+
+        if (!Enum.IsDefined(typeof(enTransferStatus), newStatusId))
+            throw new NotFoundException($"The stock transfer status ID: {newStatusId} not exists.");
+
+        await stockRepository.UpdateTransferStatusAsync(transferId, newStatusId, ct);
+        logger.LogInformation("The stock transfer ID: {TransferId} status updated to {New StatusId}", transferId, newStatusId);
     }
 
     private async Task<bool> IsProductOrWarehouseExists(int? productId, int? warehouseId, CancellationToken ct)

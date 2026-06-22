@@ -163,10 +163,14 @@ public class InvoiceService(IInvoiceRepository invoiceRepository, IWarehouseServ
         if (invoice is null)
             throw new NotFoundException($"The invoice ID: {invoiceId} not exists.");
 
+        if (invoice.InvoiceStatus == enInvoiceStatus.Paid || invoice.InvoiceStatus == enInvoiceStatus.Cancelled)
+            throw new BadRequestException($"The invoice ID: {invoiceId} is already paid or cancelled and cannot be updated.");
+
         if (!Enum.IsDefined(typeof(enInvoiceStatus), newStatusId))
             throw new NotFoundException($"The invoice status ID: {newStatusId} not exists.");
 
         await invoiceRepository.UpdateInvoiceStatusAsync(invoiceId, newStatusId, ct);
+        logger.LogInformation("The invoice ID: {InvoiceId} status updated to {NewStatusId}", invoiceId, newStatusId);
     }
 
     private bool CrossFinancialValidation(CreateInvoiceDto createInvoiceDto) 

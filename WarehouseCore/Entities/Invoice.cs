@@ -8,7 +8,7 @@ public class Invoice
     public required string InvoiceNumber { get; init; }
     public required DateTime InvoiceDate { get; init; }
     public required byte StatusID { get; init; }
-    public enInvoiceStatus invoiceStatus { get => (enInvoiceStatus)StatusID; }
+    public enInvoiceStatus InvoiceStatus { get => (enInvoiceStatus)StatusID; }
     public required decimal Subtotal { get; init; }
     public required decimal DiscountAmount { get; init; }
     public required decimal TaxAmount { get; init; }
