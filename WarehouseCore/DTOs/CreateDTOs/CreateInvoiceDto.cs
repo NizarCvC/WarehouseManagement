@@ -8,8 +8,10 @@ public class CreateInvoiceDto
     [MaxLength(100, ErrorMessage = "InvoiceNumber cannot exceed 100 characters.")]
     public required string InvoiceNumber { get; set; }
     [Required(ErrorMessage = "WarehouseID is required.")]
+    [Range(1, int.MaxValue, ErrorMessage = "WarehouseID must be a positive integer.")]
     public required int WarehouseID { get; set; }
     [Required(ErrorMessage = "CreatedByID is required.")]
+    [Range(1, int.MaxValue, ErrorMessage = "CreatedByID must be a positive integer.")]
     public required int CreatedByID { get; set; }
     [Required(ErrorMessage = "Subtotal is required.")]
     [Range(0.01, double.MaxValue, ErrorMessage = "Subtotal must be greater than zero.")]

@@ -86,6 +86,11 @@ public class InvoiceService(IInvoiceRepository invoiceRepository, IWarehouseServ
 
     public async Task<List<InvoiceSummaryDto>> GetCustomerInvoicesAsync(int customerId, CancellationToken ct, int page = 1, int pageSize = 10)
     {
+        if (!await customerService.IsCustomerExistsByIdAsync(customerId, ct))
+        {
+            throw new NotFoundException($"The customer ID: {customerId} not exists.");
+        }
+
         List<InvoiceSummaryDto> invoiceSummaries = await invoiceRepository.GetCustomerInvoicesAsync(customerId, ct, page, pageSize);
         logger.LogInformation("The customer invoices retrieved for customer ID: {CustomerId} in page {Page} with page size {PageSize}", customerId, page, pageSize);
         return invoiceSummaries;
@@ -136,6 +141,9 @@ public class InvoiceService(IInvoiceRepository invoiceRepository, IWarehouseServ
 
     public async Task<List<InvoiceSummaryDto>> GetSupplierInvoicesAsync(int supplierId, CancellationToken ct, int page = 1, int pageSize = 10)
     {
+        if (!await supplierService.IsSupplierExistsByIdAsync(supplierId, ct))
+            throw new NotFoundException($"The supplier ID: {supplierId} not exists.");
+
         List<InvoiceSummaryDto> invoiceSummaries = await invoiceRepository.GetSupplierInvoicesAsync(supplierId, ct, page, pageSize);
         logger.LogInformation("The supplier invoices retrieved for supplier ID: {SupplierId} in page {Page} with page size {PageSize}", supplierId, page, pageSize);
         return invoiceSummaries;
