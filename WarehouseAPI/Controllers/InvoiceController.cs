@@ -130,7 +130,7 @@ public class InvoiceController(IInvoiceService invoiceService) : ControllerBase
             routeValues: new { invoiceId = newInvoiceId }, value: new { Id = newInvoiceId });
     }
 
-    [HttpPut("status")]
+    [HttpPut("{invoiceId:int}/status/{newStatusId:int}")]
     [Authorize(Roles = "System Administrator,Accountant")] 
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType<ProblemDetails>(StatusCodes.Status400BadRequest)]
@@ -141,7 +141,7 @@ public class InvoiceController(IInvoiceService invoiceService) : ControllerBase
     [EndpointName("UpdateInvoiceStatusV1")]
     [EndpointSummary("Updates the status of a specific invoice")]
     [EndpointDescription("Updates the status of an existing invoice.")]
-    public async Task<IActionResult> UpdateInvoiceStatus([FromQuery] int invoiceId, [FromQuery] int newStatusId, CancellationToken ct)
+    public async Task<IActionResult> UpdateInvoiceStatus(int invoiceId, int newStatusId, CancellationToken ct)
     {
         await invoiceService.UpdateInvoiceStatusAsync(invoiceId, newStatusId, ct);
         return NoContent();
