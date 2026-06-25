@@ -156,6 +156,16 @@ public class InvoiceService(IInvoiceRepository invoiceRepository, IWarehouseServ
         return count;
     }
 
+    public async Task<bool> IsPurchaseInvoiceExistsById(int invoiceId, CancellationToken ct)
+    {
+        return await invoiceRepository.GetPurchaseInvoiceByIdAsync(invoiceId, ct) is not null;
+    }
+
+    public async Task<bool> IsSalesInvoiceExistsById(int invoiceId, CancellationToken ct)
+    {
+        return await invoiceRepository.GetSalesInvoiceByIdAsync(invoiceId, ct) is not null;
+    }
+
     public async Task UpdateInvoiceStatusAsync(int invoiceId, int newStatusId, CancellationToken ct)
     {
         Invoice? invoice = await invoiceRepository.GetInvoiceByIdAsync(invoiceId, ct);

@@ -19,6 +19,7 @@ namespace WarehouseAPI.Controllers;
 public class WarehouseController(IWarehouseService warehouseService) : ControllerBase
 {
     [HttpOptions]
+    [AllowAnonymous]
     [DisableRateLimiting]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType<ProblemDetails>(StatusCodes.Status401Unauthorized)]

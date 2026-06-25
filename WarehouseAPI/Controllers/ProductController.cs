@@ -19,6 +19,7 @@ namespace WarehouseAPI.Controllers;
 public class ProductController(IProductService productService) : ControllerBase
 {
     [HttpOptions]
+    [AllowAnonymous]
     [DisableRateLimiting]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType<ProblemDetails>(StatusCodes.Status401Unauthorized)]
@@ -71,6 +72,7 @@ public class ProductController(IProductService productService) : ControllerBase
     }
 
     [HttpGet("by-id/{productId:int}", Name = "GetProductById")]
+    [ProducesResponseType<ProductDto>(StatusCodes.Status200OK)]
     [ProducesResponseType<ProblemDetails>(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType<ProblemDetails>(StatusCodes.Status403Forbidden)]
     [ProducesResponseType<ProblemDetails>(StatusCodes.Status404NotFound)]
