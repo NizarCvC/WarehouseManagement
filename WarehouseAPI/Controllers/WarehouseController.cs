@@ -34,9 +34,9 @@ public class WarehouseController(IWarehouseService warehouseService) : Controlle
 
     [HttpHead("by-id/{warehouseId:int}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType<ProblemDetails>(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType<ProblemDetails>(StatusCodes.Status403Forbidden)]
-    [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType<ProblemDetails>(StatusCodes.Status500InternalServerError)]
     [EndpointName("HeadWarehouseByIdV1")]
     [EndpointSummary("Check if the warehouse exists by id")]
@@ -47,9 +47,9 @@ public class WarehouseController(IWarehouseService warehouseService) : Controlle
 
     [HttpHead("by-name/{name}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType<ProblemDetails>(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType<ProblemDetails>(StatusCodes.Status403Forbidden)]
-    [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType<ProblemDetails>(StatusCodes.Status500InternalServerError)]
     [EndpointName("HeadWarehouseByNameV1")]
     [EndpointSummary("Check if the warehouse exists by name")]
@@ -60,9 +60,9 @@ public class WarehouseController(IWarehouseService warehouseService) : Controlle
 
     [HttpHead("by-code/{code}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType<ProblemDetails>(StatusCodes.Status401Unauthorized)]
     [ProducesResponseType<ProblemDetails>(StatusCodes.Status403Forbidden)]
-    [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType<ProblemDetails>(StatusCodes.Status500InternalServerError)]
     [EndpointName("HeadWarehouseByCodeV1")]
     [EndpointSummary("Check if the warehouse exists by code")]
