@@ -223,35 +223,6 @@ public class ProductRepository : IProductRepository
         }
     }
 
-    private Product MapReaderToProduct(SqlDataReader reader)
-    {
-        return new Product()
-        {
-            ProductID = reader.GetInt32(reader.GetOrdinal("ProductID")),
-            Name = reader.GetString(reader.GetOrdinal("ProductName")),
-            Sku = reader.GetString(reader.GetOrdinal("Sku")),
-            Barcode = reader.GetString(reader.GetOrdinal("Barcode")),
-            Description = reader.IsDBNull(reader.GetOrdinal("Description")) ?
-                null : reader.GetString(reader.GetOrdinal("Description")),
-            PurchasePrice = reader.GetDecimal(reader.GetOrdinal("PurchasePrice")),
-            SalePrice = reader.GetDecimal(reader.GetOrdinal("SalePrice")),
-            MinStock = reader.GetInt32(reader.GetOrdinal("MinStock")),
-            IsActive = reader.GetBoolean(reader.GetOrdinal("IsActive")),
-            CreatedAt = reader.GetDateTime(reader.GetOrdinal("ProductCreatedAt")),
-            UpdatedAt = reader.IsDBNull(reader.GetOrdinal("UpdatedAt")) ?
-                null : reader.GetDateTime(reader.GetOrdinal("UpdatedAt")),
-            UnitID = reader.GetInt32(reader.GetOrdinal("UnitID")),
-            CategoryID = reader.IsDBNull(reader.GetOrdinal("CategoryID")) ?
-                 null : reader.GetInt32(reader.GetOrdinal("CategoryID")),
-            Category = reader.IsDBNull(reader.GetOrdinal("CategoryID")) ? null : new Category()
-            {
-                CategoryID = reader.GetInt32(reader.GetOrdinal("CategoryID")),
-                Name = reader.GetString(reader.GetOrdinal("CategoryName")),
-                CreatedAt = reader.GetDateTime(reader.GetOrdinal("CategoryCreatedAt")),
-            }
-        };
-    }
-
     public async Task<bool> IsProductExistsByIdAsync(int productId, CancellationToken ct)
     {
        string query = @"SELECT 1 FROM Products WHERE ProductID = @ProductID";
@@ -295,5 +266,34 @@ public class ProductRepository : IProductRepository
             object? result = await command.ExecuteScalarAsync(ct);
             return result != null;
         }
+    }
+
+    private Product MapReaderToProduct(SqlDataReader reader)
+    {
+        return new Product()
+        {
+            ProductID = reader.GetInt32(reader.GetOrdinal("ProductID")),
+            Name = reader.GetString(reader.GetOrdinal("ProductName")),
+            Sku = reader.GetString(reader.GetOrdinal("Sku")),
+            Barcode = reader.GetString(reader.GetOrdinal("Barcode")),
+            Description = reader.IsDBNull(reader.GetOrdinal("Description")) ?
+                null : reader.GetString(reader.GetOrdinal("Description")),
+            PurchasePrice = reader.GetDecimal(reader.GetOrdinal("PurchasePrice")),
+            SalePrice = reader.GetDecimal(reader.GetOrdinal("SalePrice")),
+            MinStock = reader.GetInt32(reader.GetOrdinal("MinStock")),
+            IsActive = reader.GetBoolean(reader.GetOrdinal("IsActive")),
+            CreatedAt = reader.GetDateTime(reader.GetOrdinal("ProductCreatedAt")),
+            UpdatedAt = reader.IsDBNull(reader.GetOrdinal("UpdatedAt")) ?
+                null : reader.GetDateTime(reader.GetOrdinal("UpdatedAt")),
+            UnitID = reader.GetInt32(reader.GetOrdinal("UnitID")),
+            CategoryID = reader.IsDBNull(reader.GetOrdinal("CategoryID")) ?
+                 null : reader.GetInt32(reader.GetOrdinal("CategoryID")),
+            Category = reader.IsDBNull(reader.GetOrdinal("CategoryID")) ? null : new Category()
+            {
+                CategoryID = reader.GetInt32(reader.GetOrdinal("CategoryID")),
+                Name = reader.GetString(reader.GetOrdinal("CategoryName")),
+                CreatedAt = reader.GetDateTime(reader.GetOrdinal("CategoryCreatedAt")),
+            }
+        };
     }
 }

@@ -201,20 +201,6 @@ public class CustomerRepository : ICustomerRepository
         }
     }
 
-    private Customer MapReaderToCustomer(SqlDataReader reader)
-    {
-        return new Customer()
-        {
-            CustomerID = reader.GetInt32(reader.GetOrdinal("CustomerID")),
-            Name = reader.GetString(reader.GetOrdinal("Name")),
-            Phone = reader.GetString(reader.GetOrdinal("Phone")),
-            Email = reader.GetString(reader.GetOrdinal("Email")),
-            Address = reader.GetString(reader.GetOrdinal("Address")),
-            IsActive = reader.GetBoolean(reader.GetOrdinal("IsActive")),
-            CreatedAt = reader.GetDateTime(reader.GetOrdinal("CreatedAt"))
-        };
-    }
-
     public async Task<bool> IsCustomerExistsByIdAsync(int customerId, CancellationToken ct)
     {
         string query = @"SELECT 1 FROM Customers WHERE CustomerID = @CustomerID";
@@ -258,5 +244,19 @@ public class CustomerRepository : ICustomerRepository
             object? result = await command.ExecuteScalarAsync(ct);
             return result != null;
         }
+    }
+
+    private Customer MapReaderToCustomer(SqlDataReader reader)
+    {
+        return new Customer()
+        {
+            CustomerID = reader.GetInt32(reader.GetOrdinal("CustomerID")),
+            Name = reader.GetString(reader.GetOrdinal("Name")),
+            Phone = reader.GetString(reader.GetOrdinal("Phone")),
+            Email = reader.GetString(reader.GetOrdinal("Email")),
+            Address = reader.GetString(reader.GetOrdinal("Address")),
+            IsActive = reader.GetBoolean(reader.GetOrdinal("IsActive")),
+            CreatedAt = reader.GetDateTime(reader.GetOrdinal("CreatedAt"))
+        };
     }
 }

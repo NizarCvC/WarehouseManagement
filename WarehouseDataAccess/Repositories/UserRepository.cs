@@ -4,6 +4,7 @@ using Microsoft.Extensions.Configuration;
 using WarehouseCore.DTOs.CreateDTOs;
 using WarehouseCore.Entities;
 using WarehouseDataAccess.Interfaces;
+
 namespace WarehouseDataAccess.Repositories;
 
 public class UserRepository : IUserRepository

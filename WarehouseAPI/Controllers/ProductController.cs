@@ -159,7 +159,7 @@ public class ProductController(IProductService productService) : ControllerBase
         int newProductId = await productService.AddNewProductAsync(productDto, ct);
 
         return CreatedAtRoute(routeName: nameof(GetProductById),
-            routeValues: new { Id = newProductId }, value: new { Id = newProductId });
+            routeValues: new { productId = newProductId }, value: new { Id = newProductId });
     }
 
     [HttpPut("{productId:int}")]

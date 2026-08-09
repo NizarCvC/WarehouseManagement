@@ -159,7 +159,7 @@ public class WarehouseController(IWarehouseService warehouseService) : Controlle
         int newWarehouseId = await warehouseService.AddNewWarehouseAsync(warehouseDto, ct);
 
         return CreatedAtRoute(routeName: nameof(GetWarehouseById),
-            routeValues: new { Id = newWarehouseId }, value: new { Id = newWarehouseId });
+            routeValues: new { warehouseId = newWarehouseId }, value: new { Id = newWarehouseId });
     }
 
     [HttpPut("{warehouseId:int}")]

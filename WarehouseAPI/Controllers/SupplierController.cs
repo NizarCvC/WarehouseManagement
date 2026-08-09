@@ -186,7 +186,7 @@ public class SupplierController(ISupplierService supplierService) : ControllerBa
         int newSupplierId = await supplierService.AddNewSupplierAsync(supplierDto, ct);
 
         return CreatedAtRoute(routeName: nameof(GetSupplierById),
-            routeValues: new { Id = newSupplierId }, value: new { Id = newSupplierId });
+            routeValues: new { supplierId = newSupplierId }, value: new { Id = newSupplierId });
     }
 
     [HttpPut("{supplierId:int}")]

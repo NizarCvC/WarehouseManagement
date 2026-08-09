@@ -191,19 +191,6 @@ public class WarehouseRepository : IWarehouseRepository
         }
     }
 
-    private Warehouse MapReaderToWarehouse(SqlDataReader reader)
-    {
-        return new Warehouse()
-        {
-            WarehouseID = reader.GetInt32(reader.GetOrdinal("WarehouseID")),
-            Name = reader.GetString(reader.GetOrdinal("Name")),
-            Code = reader.GetString(reader.GetOrdinal("Code")),
-            Location = reader.GetString(reader.GetOrdinal("Location")),
-            IsActive = reader.GetBoolean(reader.GetOrdinal("IsActive")),
-            CreatedAt = reader.GetDateTime(reader.GetOrdinal("CreatedAt")),
-        };
-    }
-
     public async Task<bool> IsWarehouseExistsByIdAsync(int warehouseId, CancellationToken ct)
     {
         string query = @"SELECT 1 FROM Warehouses WHERE WarehouseID = @WarehouseID";
@@ -245,5 +232,18 @@ public class WarehouseRepository : IWarehouseRepository
             object? result = await command.ExecuteScalarAsync(ct);
             return result != null;
         }
+    }
+
+    private Warehouse MapReaderToWarehouse(SqlDataReader reader)
+    {
+        return new Warehouse()
+        {
+            WarehouseID = reader.GetInt32(reader.GetOrdinal("WarehouseID")),
+            Name = reader.GetString(reader.GetOrdinal("Name")),
+            Code = reader.GetString(reader.GetOrdinal("Code")),
+            Location = reader.GetString(reader.GetOrdinal("Location")),
+            IsActive = reader.GetBoolean(reader.GetOrdinal("IsActive")),
+            CreatedAt = reader.GetDateTime(reader.GetOrdinal("CreatedAt")),
+        };
     }
 }

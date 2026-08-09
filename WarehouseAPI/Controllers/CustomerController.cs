@@ -159,7 +159,7 @@ public class CustomerController(ICustomerService customerService) : ControllerBa
         int newCustomerId = await customerService.AddNewCustomerAsync(customerDto, ct);
 
         return CreatedAtRoute(routeName: nameof(GetCustomerById),
-            routeValues: new { Id = newCustomerId }, value: new { Id = newCustomerId });
+            routeValues: new { customerId = newCustomerId }, value: new { Id = newCustomerId });
     }
 
     [HttpPut("{customerId:int}")]
