@@ -112,14 +112,14 @@ public class CustomerService(ICustomerRepository customerRepository,
         logger.LogInformation("The customer with ID '{CustomerId}' was updated successfully", customerId);
     }
 
-    public async Task DeactivateCustomerAsync(int customerId, CancellationToken ct)
+    public async Task DeleteCustomerAsync(int customerId, CancellationToken ct)
     {
-        bool isSuccess = await customerRepository.DeactivateCustomerAsync(customerId, ct);
+        bool isSuccess = await customerRepository.DeleteCustomerAsync(customerId, ct);
 
         if (!isSuccess)
             throw new NotFoundException($"The customer ID: {customerId} not exists.");
 
-        logger.LogInformation("The customer with id '{CustomerId}' is deactivated", customerId);
+        logger.LogInformation("The customer with id '{CustomerId}' is deleted", customerId);
     }
 
     public async Task<bool> IsCustomerExistsByIdAsync(int customerId, CancellationToken ct)

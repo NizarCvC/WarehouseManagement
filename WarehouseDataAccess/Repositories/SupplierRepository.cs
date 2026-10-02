@@ -206,9 +206,9 @@ public class SupplierRepository : ISupplierRepository
         }
     }
 
-    public async Task<bool> DeactivateSupplierAsync(int supplierId, CancellationToken ct)
+    public async Task<bool> DeleteSupplierAsync(int supplierId, CancellationToken ct)
     {
-        string query = @"UPDATE Suppliers SET IsActive = 0 WHERE SupplierID = @SupplierID";
+        string query = @"DELETE FROM Suppliers WHERE SupplierID = @SupplierID";
 
         using (SqlConnection connection = new SqlConnection(_connectionString))
         using (SqlCommand command = new SqlCommand(query, connection))
@@ -249,7 +249,7 @@ public class SupplierRepository : ISupplierRepository
             object? result = await command.ExecuteScalarAsync(ct);
             return result != null;
         }
-    }   
+    }
 
     public async Task<bool> IsSupplierExistsByPhoneAsync(string phone, CancellationToken ct)
     {

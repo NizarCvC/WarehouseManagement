@@ -112,14 +112,14 @@ public class WarehouseService(IWarehouseRepository warehouseRepository,
         logger.LogInformation("The warehouse with ID '{WarehouseId}' was updated successfully", warehouseId);
     }
 
-    public async Task DeactivateWarehouseAsync(int warehouseId, CancellationToken ct)
+    public async Task DeleteWarehouseAsync(int warehouseId, CancellationToken ct)
     {
-        bool isSuccess = await warehouseRepository.DeactivateWarehouseAsync(warehouseId, ct);
+        bool isSuccess = await warehouseRepository.DeleteWarehouseAsync(warehouseId, ct);
 
         if (!isSuccess)
             throw new NotFoundException($"The warehouse with ID: {warehouseId} not exists.");
 
-        logger.LogInformation("The warehouse with ID '{WarehouseId}' was deactivated", warehouseId);
+        logger.LogInformation("The warehouse with ID '{WarehouseId}' was deleted", warehouseId);
     }
 
     public async Task<bool> IsWarehouseExistsByIdAsync(int warehouseId, CancellationToken ct)

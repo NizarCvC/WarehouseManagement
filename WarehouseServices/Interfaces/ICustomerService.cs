@@ -12,7 +12,7 @@ public interface ICustomerService
     Task<int> GetCustomersCountAsync(CancellationToken ct);
     Task<int> AddNewCustomerAsync(CreateCustomerDto customerDto, CancellationToken ct);
     Task UpdateCustomerAsync(int customerId, CreateCustomerDto customerDto, CancellationToken ct);
-    Task DeactivateCustomerAsync(int customerId, CancellationToken ct);
+    Task DeleteCustomerAsync(int customerId, CancellationToken ct);
     Task<bool> IsCustomerExistsByIdAsync(int customerId, CancellationToken ct);
     Task<bool> IsCustomerExistsByEmailAsync(string email, CancellationToken ct);
     Task<bool> IsCustomerExistsByPhoneAsync(string phone, CancellationToken ct);

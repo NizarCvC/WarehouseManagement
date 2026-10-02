@@ -207,9 +207,9 @@ public class ProductRepository : IProductRepository
         }
     }
 
-    public async Task<bool> DeactivateProductAsync(int productId, CancellationToken ct)
+    public async Task<bool> DeleteProductAsync(int productId, CancellationToken ct)
     {
-        string query = @"UPDATE Products SET IsActive = 0 WHERE ProductID = @ProductID";
+        string query = @"DELETE FROM Products WHERE ProductID = @ProductID";
 
         using (SqlConnection connection = new SqlConnection(_connectionString))
         using (SqlCommand command = new SqlCommand(query, connection))
@@ -225,7 +225,7 @@ public class ProductRepository : IProductRepository
 
     public async Task<bool> IsProductExistsByIdAsync(int productId, CancellationToken ct)
     {
-       string query = @"SELECT 1 FROM Products WHERE ProductID = @ProductID";
+        string query = @"SELECT 1 FROM Products WHERE ProductID = @ProductID";
 
         using (SqlConnection connection = new SqlConnection(_connectionString))
         using (SqlCommand command = new SqlCommand(query, connection))

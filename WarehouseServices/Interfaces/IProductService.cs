@@ -12,7 +12,7 @@ public interface IProductService
     Task<int> GetProductsCountAsync(CancellationToken ct);
     Task<int> AddNewProductAsync(CreateProductDto productDto, CancellationToken ct);
     Task UpdateProductAsync(int productId, CreateProductDto productDto, CancellationToken ct);
-    Task DeactivateProductAsync(int productId, CancellationToken ct);
+    Task DeleteProductAsync(int productId, CancellationToken ct);
     Task<bool> IsProductExistsByIdAsync(int productId, CancellationToken ct);
     Task<bool> IsProductExistsBySkuAsync(string sku, CancellationToken ct);
     Task<bool> IsProductExistsByBarcodeAsync(string barcode, CancellationToken ct);

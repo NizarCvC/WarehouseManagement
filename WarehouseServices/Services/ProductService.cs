@@ -113,14 +113,14 @@ public class ProductService(IProductRepository productRepository,
         logger.LogInformation("The product with ID '{ProductId}' was updated successfully", productId);
     }
 
-    public async Task DeactivateProductAsync(int productId, CancellationToken ct)
+    public async Task DeleteProductAsync(int productId, CancellationToken ct)
     {
-        bool isSuccess = await productRepository.DeactivateProductAsync(productId, ct);
+        bool isSuccess = await productRepository.DeleteProductAsync(productId, ct);
 
         if (!isSuccess)
             throw new NotFoundException($"The product with ID: {productId} not exists.");
 
-        logger.LogInformation("The product with ID '{ProductId}' was deactivated", productId);
+        logger.LogInformation("The product with ID '{ProductId}' was deleted", productId);
     }
 
     public async Task<bool> IsProductExistsByIdAsync(int productId, CancellationToken ct)

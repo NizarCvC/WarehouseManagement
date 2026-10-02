@@ -188,12 +188,12 @@ public class WarehouseController(IWarehouseService warehouseService) : Controlle
     [ProducesResponseType<ProblemDetails>(StatusCodes.Status403Forbidden)]
     [ProducesResponseType<ProblemDetails>(StatusCodes.Status404NotFound)]
     [ProducesResponseType<ProblemDetails>(StatusCodes.Status500InternalServerError)]
-    [EndpointName("DeactivateWarehouseV1")]
-    [EndpointSummary("Deactivate warehouse by id")]
-    [EndpointDescription("Deactivate the warehouse in the system.")]
-    public async Task<IActionResult> DeactivateWarehouse(int warehouseId, CancellationToken ct)
+    [EndpointName("DeleteWarehouseV1")]
+    [EndpointSummary("Delete warehouse by id")]
+    [EndpointDescription("Delete the warehouse in the system.")]
+    public async Task<IActionResult> DeleteWarehouse(int warehouseId, CancellationToken ct)
     {
-        await warehouseService.DeactivateWarehouseAsync(warehouseId, ct);
+        await warehouseService.DeleteWarehouseAsync(warehouseId, ct);
         return NoContent();
     }
 }

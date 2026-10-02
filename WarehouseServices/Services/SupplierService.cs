@@ -131,14 +131,14 @@ public class SupplierService(ISupplierRepository supplierRepository,
         logger.LogInformation("The supplier with ID '{SupplierId}' was updated successfully", supplierId);
     }
 
-    public async Task DeactivateSupplierAsync(int supplierId, CancellationToken ct)
+    public async Task DeleteSupplierAsync(int supplierId, CancellationToken ct)
     {
-        bool isSuccess = await supplierRepository.DeactivateSupplierAsync(supplierId, ct);
+        bool isSuccess = await supplierRepository.DeleteSupplierAsync(supplierId, ct);
 
         if (!isSuccess)
             throw new NotFoundException($"The supplier ID: {supplierId} not exists.");
 
-        logger.LogInformation("The supplier with id '{SupplierId}' is deactivated", supplierId);
+        logger.LogInformation("The supplier with id '{SupplierId}' is deleted", supplierId);
     }
 
     public async Task<bool> IsSupplierExistsByIdAsync(int supplierId, CancellationToken ct)

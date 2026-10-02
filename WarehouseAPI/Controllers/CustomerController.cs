@@ -188,12 +188,12 @@ public class CustomerController(ICustomerService customerService) : ControllerBa
     [ProducesResponseType<ProblemDetails>(StatusCodes.Status403Forbidden)]
     [ProducesResponseType<ProblemDetails>(StatusCodes.Status404NotFound)]
     [ProducesResponseType<ProblemDetails>(StatusCodes.Status500InternalServerError)]
-    [EndpointName("DeactivateCustomerV1")]
-    [EndpointSummary("Deactivate customer by id")]
-    [EndpointDescription("Deactivate the customer in the system.")]
-    public async Task<IActionResult> DeactivateCustomer(int customerId, CancellationToken ct)
+    [EndpointName("DeleteCustomerV1")]
+    [EndpointSummary("Delete customer by id")]
+    [EndpointDescription("Delete the customer in the system.")]
+    public async Task<IActionResult> DeleteCustomer(int customerId, CancellationToken ct)
     {
-        await customerService.DeactivateCustomerAsync(customerId, ct);
+        await customerService.DeleteCustomerAsync(customerId, ct);
         return NoContent();
     }
 }

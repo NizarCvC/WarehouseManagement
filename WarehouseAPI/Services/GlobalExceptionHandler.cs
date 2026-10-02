@@ -34,7 +34,7 @@ public class GlobalExceptionHandler(IProblemDetailsService problemDetailsService
 
         string errorMessage = exception switch
         {
-            SqlException => "A database error occurred while processing your request. Please try again later.", 
+            SqlException => "An error occurred while processing your request. Please try again later.", 
             _ when statusCode >= 500 => "An unexpected server error occurred.",
             _ => exception.Message
         };

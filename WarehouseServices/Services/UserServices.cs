@@ -97,14 +97,14 @@ public class UserServices(IUserRepository userRepository, ILogger<UserServices> 
         logger.LogInformation("The user with ID '{UserId}' was updated successfully", userId);
     }
 
-    public async Task DeactivateUserAsync(int userId, CancellationToken ct)
+    public async Task DeleteUserAsync(int userId, CancellationToken ct)
     {
-        bool isSuccess = await userRepository.DeactivateUserAsync(userId, ct);
+        bool isSuccess = await userRepository.DeleteUserAsync(userId, ct);
 
         if (!isSuccess)
             throw new NotFoundException($"The user with ID: {userId} not exists.");
 
-        logger.LogInformation("The user with ID '{UserId}' was deactivated", userId);
+        logger.LogInformation("The user with ID '{UserId}' was deleted", userId);
     }
 
     public async Task<bool> IsUserIdExistsAsync(int userId, CancellationToken ct)

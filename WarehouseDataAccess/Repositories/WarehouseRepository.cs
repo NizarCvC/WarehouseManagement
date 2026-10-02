@@ -119,11 +119,11 @@ public class WarehouseRepository : IWarehouseRepository
         {
             await connection.OpenAsync(ct);
 
-           object result = await command.ExecuteScalarAsync(ct);
-            
+            object result = await command.ExecuteScalarAsync(ct);
+
             if (result != null && result != DBNull.Value)
                 countNumber = Convert.ToInt32(result);
-            
+
             return countNumber;
         }
     }
@@ -175,9 +175,9 @@ public class WarehouseRepository : IWarehouseRepository
         }
     }
 
-    public async Task<bool> DeactivateWarehouseAsync(int warehouseId, CancellationToken ct)
+    public async Task<bool> DeleteWarehouseAsync(int warehouseId, CancellationToken ct)
     {
-        string query = @"UPDATE Warehouses SET IsActive = 0 WHERE WarehouseID = @WarehouseID";
+        string query = @"DELETE FROM Warehouses WHERE WarehouseID = @WarehouseID";
 
         using (SqlConnection connection = new SqlConnection(_connectionString))
         using (SqlCommand command = new SqlCommand(query, connection))

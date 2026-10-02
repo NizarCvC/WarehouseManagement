@@ -215,12 +215,12 @@ public class SupplierController(ISupplierService supplierService) : ControllerBa
     [ProducesResponseType<ProblemDetails>(StatusCodes.Status403Forbidden)]
     [ProducesResponseType<ProblemDetails>(StatusCodes.Status404NotFound)]
     [ProducesResponseType<ProblemDetails>(StatusCodes.Status500InternalServerError)]
-    [EndpointName("DeactivateSupplierV1")]
-    [EndpointSummary("Deactivate supplier by id")]
-    [EndpointDescription("Deactivate the supplier in the system.")]
-    public async Task<IActionResult> DeactivateSupplier(int supplierId, CancellationToken ct)
+    [EndpointName("DeleteSupplierV1")]
+    [EndpointSummary("Delete supplier by id")]
+    [EndpointDescription("Delete the supplier in the system.")]
+    public async Task<IActionResult> DeleteSupplier(int supplierId, CancellationToken ct)
     {
-        await supplierService.DeactivateSupplierAsync(supplierId, ct);
+        await supplierService.DeleteSupplierAsync(supplierId, ct);
         return NoContent();
     }
 }

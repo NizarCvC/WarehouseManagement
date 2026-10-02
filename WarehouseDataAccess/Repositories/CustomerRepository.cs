@@ -185,9 +185,9 @@ public class CustomerRepository : ICustomerRepository
         }
     }
 
-    public async Task<bool> DeactivateCustomerAsync(int customerId, CancellationToken ct)
+    public async Task<bool> DeleteCustomerAsync(int customerId, CancellationToken ct)
     {
-        string query = @"UPDATE Customers SET IsActive = 0 WHERE CustomerID = @CustomerID";
+        string query = @"DELETE FROM Customers WHERE CustomerID = @CustomerID";
 
         using (SqlConnection connection = new SqlConnection(_connectionString))
         using (SqlCommand command = new SqlCommand(query, connection))
@@ -229,7 +229,7 @@ public class CustomerRepository : ICustomerRepository
             object? result = await command.ExecuteScalarAsync(ct);
             return result != null;
         }
-    }   
+    }
 
     public async Task<bool> IsCustomerExistsByPhoneAsync(string phone, CancellationToken ct)
     {

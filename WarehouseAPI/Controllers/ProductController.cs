@@ -188,12 +188,12 @@ public class ProductController(IProductService productService) : ControllerBase
     [ProducesResponseType<ProblemDetails>(StatusCodes.Status403Forbidden)]
     [ProducesResponseType<ProblemDetails>(StatusCodes.Status404NotFound)]
     [ProducesResponseType<ProblemDetails>(StatusCodes.Status500InternalServerError)]
-    [EndpointName("DeactivateProductV1")]
-    [EndpointSummary("Deactivate product by id")]
-    [EndpointDescription("Deactivate the product in the system.")]
-    public async Task<IActionResult> DeactivateProduct(int productId, CancellationToken ct)
+    [EndpointName("DeleteProductV1")]
+    [EndpointSummary("Delete product by id")]
+    [EndpointDescription("Delete the product in the system.")]
+    public async Task<IActionResult> DeleteProduct(int productId, CancellationToken ct)
     {
-        await productService.DeactivateProductAsync(productId, ct);
+        await productService.DeleteProductAsync(productId, ct);
         return NoContent();
     }
 }

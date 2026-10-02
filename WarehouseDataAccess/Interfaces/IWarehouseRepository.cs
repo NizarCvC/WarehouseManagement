@@ -12,7 +12,7 @@ public interface IWarehouseRepository
     Task<int> GetWarehousesCountAsync(CancellationToken ct);
     Task<int> AddNewWarehouseAsync(CreateWarehouseDto warehouse, CancellationToken ct);
     Task<bool> UpdateWarehouseAsync(int warehouseId, CreateWarehouseDto warehouse, CancellationToken ct);
-    Task<bool> DeactivateWarehouseAsync(int warehouseId, CancellationToken ct);
+    Task<bool> DeleteWarehouseAsync(int warehouseId, CancellationToken ct);
     Task<bool> IsWarehouseExistsByIdAsync(int warehouseId, CancellationToken ct);
     Task<bool> IsWarehouseExistsByNameAsync(string name, CancellationToken ct);
     Task<bool> IsWarehouseExistsByCodeAsync(string code, CancellationToken ct);

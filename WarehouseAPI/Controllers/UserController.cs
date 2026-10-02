@@ -157,12 +157,12 @@ public class UserController(IUserService userService) : ControllerBase
     [ProducesResponseType<ProblemDetails>(StatusCodes.Status403Forbidden)]
     [ProducesResponseType<ProblemDetails>(StatusCodes.Status404NotFound)]
     [ProducesResponseType<ProblemDetails>(StatusCodes.Status500InternalServerError)]
-    [EndpointName("DeactivateUserV1")]
-    [EndpointSummary("Deactivate user by id")]
-    [EndpointDescription("Deactivate the user in the system.")]
-    public async Task<IActionResult> DeactivateUser(int userId, CancellationToken ct)
+    [EndpointName("DeleteUserV1")]
+    [EndpointSummary("Delete user by id")]
+    [EndpointDescription("Delete the user in the system.")]
+    public async Task<IActionResult> DeleteUser(int userId, CancellationToken ct)
     {
-        await userService.DeactivateUserAsync(userId, ct);
+        await userService.DeleteUserAsync(userId, ct);
         return NoContent();
     }
 

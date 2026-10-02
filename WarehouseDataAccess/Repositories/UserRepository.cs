@@ -163,9 +163,9 @@ public class UserRepository : IUserRepository
         }
     }
 
-    public async Task<bool> DeactivateUserAsync(int userId, CancellationToken ct)
+    public async Task<bool> DeleteUserAsync(int userId, CancellationToken ct)
     {
-        string query = @"UPDATE Users SET IsActive = 0 WHERE UserID = @UserID";
+        string query = @"DELETE FROM Users WHERE UserID = @UserID";
 
         using (SqlConnection connection = new SqlConnection(_connectionString))
         using (SqlCommand command = new SqlCommand(query, connection))
