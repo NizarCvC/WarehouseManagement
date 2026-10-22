@@ -5,7 +5,6 @@ using Microsoft.Extensions.Configuration;
 using WarehouseCore.DTOs.CreateDTOs;
 using WarehouseCore.DTOs.ReadDTOs;
 using WarehouseCore.Entities;
-using WarehouseCore.enums;
 using WarehouseDataAccess.Interfaces;
 
 namespace WarehouseDataAccess.Repositories;
