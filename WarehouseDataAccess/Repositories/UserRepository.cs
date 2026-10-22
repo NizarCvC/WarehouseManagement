@@ -10,7 +10,7 @@ namespace WarehouseDataAccess.Repositories;
 public class UserRepository : IUserRepository
 {
     private readonly string _connectionString;
-
+ 
     public UserRepository(IConfiguration configuration)
     {
         _connectionString = configuration.GetConnectionString("DefaultConnection")
@@ -49,6 +49,28 @@ public class UserRepository : IUserRepository
         using (SqlCommand command = new SqlCommand(query, connection))
         {
             command.Parameters.Add(new SqlParameter("@Username", SqlDbType.NVarChar) { Value = username });
+            await connection.OpenAsync(ct);
+
+            using (SqlDataReader reader = await command.ExecuteReaderAsync(ct))
+            {
+                if (await reader.ReadAsync(ct))
+                    return MapReaderToUser(reader);
+                else
+                    return null;
+            }
+        }
+    }
+
+     public async Task<User?> GetByEmailAsync(string email, CancellationToken ct)
+    {
+        string query = @"SELECT u.UserID, u.Name, u.Username, u.Email, u.PasswordHash, u.IsActive, u.CreatedAt,
+                        u.RoleID, u.RefreshToken, u.RefreshTokenExpiryTime
+                        FROM Users u WHERE Email = @Email";
+
+        using (SqlConnection connection = new SqlConnection(_connectionString))
+        using (SqlCommand command = new SqlCommand(query, connection))
+        {
+            command.Parameters.Add(new SqlParameter("@Email", SqlDbType.NVarChar) { Value = email });
             await connection.OpenAsync(ct);
 
             using (SqlDataReader reader = await command.ExecuteReaderAsync(ct))
@@ -179,7 +201,7 @@ public class UserRepository : IUserRepository
         }
     }
 
-    public async Task<bool> IsUserIdExistsAsync(int userId, CancellationToken ct)
+    public async Task<bool> IsUserExistsByIdAsync(int userId, CancellationToken ct)
     {
         string query = @"SELECT 1 FROM Users WHERE UserID = @UserID";
 
@@ -194,7 +216,7 @@ public class UserRepository : IUserRepository
         }
     }
 
-    public async Task<bool> IsUsernameExistsAsync(string username, CancellationToken ct)
+    public async Task<bool> IsUserExistsByUsernameAsync(string username, CancellationToken ct)
     {
         string query = @"SELECT 1 FROM Users WHERE Username = @Username";
 
@@ -202,6 +224,21 @@ public class UserRepository : IUserRepository
         using (SqlCommand command = new SqlCommand(query, connection))
         {
             command.Parameters.Add(new SqlParameter("@Username", SqlDbType.NVarChar) { Value = username });
+            await connection.OpenAsync(ct);
+
+            object? result = await command.ExecuteScalarAsync(ct);
+            return result != null;
+        }
+    }
+
+     public async Task<bool> IsUserExistsByEmailAsync(string email, CancellationToken ct)
+    {
+        string query = @"SELECT 1 FROM Users WHERE Email = @Email";
+
+        using (SqlConnection connection = new SqlConnection(_connectionString))
+        using (SqlCommand command = new SqlCommand(query, connection))
+        {
+            command.Parameters.Add(new SqlParameter("@Email", SqlDbType.NVarChar) { Value = email });
             await connection.OpenAsync(ct);
 
             object? result = await command.ExecuteScalarAsync(ct);

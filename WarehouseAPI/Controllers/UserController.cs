@@ -42,7 +42,7 @@ public class UserController(IUserService userService) : ControllerBase
     [EndpointSummary("Check if the user exists by id")]
     public async Task<IActionResult> HeadUser(int userId, CancellationToken ct)
     {
-        return await userService.IsUserIdExistsAsync(userId, ct) ? Ok() : NotFound();
+        return await userService.IsUserExistsByIdAsync(userId, ct) ? Ok() : NotFound();
     }
 
     [HttpHead("by-username/{username}")]
@@ -53,9 +53,22 @@ public class UserController(IUserService userService) : ControllerBase
     [ProducesResponseType<ProblemDetails>(StatusCodes.Status500InternalServerError)]
     [EndpointName("HeadUserByUsernameV1")]
     [EndpointSummary("Check if the user exists by username")]
-    public async Task<IActionResult> HeadUser(string username, CancellationToken ct)
+    public async Task<IActionResult> HeadUserByUsername(string username, CancellationToken ct)
     {
-        return await userService.IsUsernameExistsAsync(username, ct) ? Ok() : NotFound();
+        return await userService.IsUserExistsByUsernameAsync(username, ct) ? Ok() : NotFound();
+    }
+
+    [HttpHead("by-email/{email}")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType<ProblemDetails>(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType<ProblemDetails>(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType<ProblemDetails>(StatusCodes.Status500InternalServerError)]
+    [EndpointName("HeadUserByEmailV1")]
+    [EndpointSummary("Check if the user exists by email")]
+    public async Task<IActionResult> HeadUserByEmail(string username, CancellationToken ct)
+    {
+        return await userService.IsUserExistsByEmailAsync(username, ct) ? Ok() : NotFound();
     }
 
     [HttpGet("by-id/{userId:int}", Name = "GetUserById")]
@@ -85,6 +98,21 @@ public class UserController(IUserService userService) : ControllerBase
     public async Task<ActionResult<UserDto>> GetUserByUsername(string username, CancellationToken ct)
     {
         var userInfo = await userService.GetUserByUsernameAsync(username, ct);
+        return Ok(userInfo);
+    }
+
+    [HttpGet("by-email/{email}", Name = "GetByEmail")]
+    [ProducesResponseType<UserDto>(StatusCodes.Status200OK)]
+    [ProducesResponseType<ProblemDetails>(StatusCodes.Status401Unauthorized)]
+    [ProducesResponseType<ProblemDetails>(StatusCodes.Status403Forbidden)]
+    [ProducesResponseType<ProblemDetails>(StatusCodes.Status404NotFound)]
+    [ProducesResponseType<ProblemDetails>(StatusCodes.Status500InternalServerError)]
+    [EndpointName("GetByEmailV1")]
+    [EndpointSummary("Retrieves a specific user with his info")]
+    [EndpointDescription("Retrieves a user by email and includes user information.")]
+    public async Task<ActionResult<UserDto>> GetUserByEmail(string email, CancellationToken ct)
+    {
+        var userInfo = await userService.GetUserByEmailAsync(email, ct);
         return Ok(userInfo);
     }
 

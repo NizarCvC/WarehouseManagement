@@ -33,6 +33,17 @@ public class UserServices(IUserRepository userRepository, ILogger<UserServices> 
         return UserDto.FromEntity(userInfo);
     }
 
+    public async Task<UserDto> GetUserByEmailAsync(string email, CancellationToken ct)
+    {
+        var userInfo = await userRepository.GetByEmailAsync(email, ct);
+
+        if (userInfo is null)
+            throw new NotFoundException($"The user by email '{email}' not exists.");
+
+        logger.LogInformation("The user with email '{Email}' is retrieved", email);
+        return UserDto.FromEntity(userInfo);
+    }
+
     public async Task<List<UserDto>> GetAllUsersAsync(CancellationToken ct, int page = 1, int pageSize = 10)
     {
         List<User> users = await userRepository.GetAllUsersAsync(ct, page, pageSize);
@@ -49,7 +60,7 @@ public class UserServices(IUserRepository userRepository, ILogger<UserServices> 
 
     public async Task<int> AddNewUserAsync(CreateUserDto userDto, CancellationToken ct)
     {
-        if (await userRepository.IsUsernameExistsAsync(userDto.Username, ct))
+        if (await userRepository.IsUserExistsByUsernameAsync(userDto.Username, ct))
             throw new ConflictException($"The user with username '{userDto.Username}' is already used.");
 
         userDto.Password = Hashing.HashPasswordOnly(userDto.Password);
@@ -74,7 +85,7 @@ public class UserServices(IUserRepository userRepository, ILogger<UserServices> 
 
         if (userInfo.Username != userDto.Username)
         {
-            bool isUsernameUsed = await userRepository.IsUsernameExistsAsync(userDto.Username, ct);
+            bool isUsernameUsed = await userRepository.IsUserExistsByUsernameAsync(userDto.Username, ct);
 
             if (isUsernameUsed)
                 throw new ConflictException($"The username: {userDto.Username} is already used.");
@@ -107,9 +118,9 @@ public class UserServices(IUserRepository userRepository, ILogger<UserServices> 
         logger.LogInformation("The user with ID '{UserId}' was deleted", userId);
     }
 
-    public async Task<bool> IsUserIdExistsAsync(int userId, CancellationToken ct)
+    public async Task<bool> IsUserExistsByIdAsync(int userId, CancellationToken ct)
     {
-        bool isFound = await userRepository.IsUserIdExistsAsync(userId, ct);
+        bool isFound = await userRepository.IsUserExistsByIdAsync(userId, ct);
 
         if (isFound)
             logger.LogDebug("The user with id '{UserId}' is found.", userId);
@@ -119,14 +130,26 @@ public class UserServices(IUserRepository userRepository, ILogger<UserServices> 
         return isFound;
     }
 
-    public async Task<bool> IsUsernameExistsAsync(string username, CancellationToken ct)
+    public async Task<bool> IsUserExistsByUsernameAsync(string username, CancellationToken ct)
     {
-        bool isFound = await userRepository.IsUsernameExistsAsync(username, ct);
+        bool isFound = await userRepository.IsUserExistsByUsernameAsync(username, ct);
 
         if (isFound)
             logger.LogDebug("The user with username '{Username}' is found.", username);
         else
             logger.LogDebug("The user with username '{Username}' is not found.", username);
+
+        return isFound;
+    }
+
+    public async Task<bool> IsUserExistsByEmailAsync(string email, CancellationToken ct)
+    {
+        bool isFound = await userRepository.IsUserExistsByEmailAsync(email, ct);
+
+        if (isFound)
+            logger.LogDebug("The user with id '{Email}' is found.", email);
+        else
+            logger.LogDebug("The user with id '{Email}' is not found.", email);
 
         return isFound;
     }
